@@ -7,7 +7,7 @@ def test_example():
 
 
 def test_split_by_h1_simple():
-    with open("test_resources/test_simple.md") as fh:
+    with open("test_resources/simple.md") as fh:
         parts = list(split_by_h1(fh))
         assert len(parts) == 2
 
@@ -18,7 +18,7 @@ def test_split_by_h1_simple():
 
 
 def test_split_by_h1_codeblock():
-    with open("test_resources/test_codeblock.md") as fh:
+    with open("test_resources/codeblock.md") as fh:
         parts = list(split_by_h1(fh))
         assert len(parts) == 4
 

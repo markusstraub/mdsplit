@@ -1,10 +1,13 @@
 from collections import namedtuple
 from pathlib import Path
 import argparse
+import os
 import re
 
 DESCRIPTION = """Splits markdown files at level 1 headings.
 For each chapter a new file with the (sanitized) heading name is written to the output folder.
+Text before the first header is written to a file with the same name as the input file.
+TODO: handle name collisions
 """
 FENCES = ["```", "~~~"]
 
@@ -16,7 +19,7 @@ def split_by_h1(text):
     lines = []
     within_fence = False
     for line in text:
-        if has_fence(line):
+        if is_fence(line):
             within_fence = not within_fence
 
         new_chapter = is_heading(line) and not within_fence
@@ -34,7 +37,7 @@ def is_heading(line):
     return line.startswith("# ")
 
 
-def has_fence(line):
+def is_fence(line):
     for fence in FENCES:
         if line.startswith(fence):
             return True
@@ -52,25 +55,45 @@ def get_valid_filename(name):
     return s
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=DESCRIPTION)
-    parser.add_argument("input", help="input file")
-    parser.add_argument("--output", help="output folder", default=None)
-    args = parser.parse_args()
-    print(args)
-
-    out_path_str = args.output
-    if out_path_str is None:
-        out_path_str = Path(args.input).stem
-    out_path = Path(get_valid_filename(out_path_str))
-    out_path.mkdir(exist_ok=False)
-    print(f"created output folder {out_path}")
-
-    with open(args.input) as file:
+def process_file(in_file_path, out_path):
+    print(f"process file '{in_file_path}' to '{out_path}'")
+    print(f"Create output folder '{out_path}'")
+    out_path.mkdir(parents=True, exist_ok=False)
+    with open(in_file_path) as file:
         chapters = split_by_h1(file)
         for chapter in chapters:
             chapter_filename = get_valid_filename(chapter.header) + ".md"
-            with open(out_path / chapter_filename, mode="w") as file:
+            if chapter.header is None:
+                chapter_filename = in_file_path.name
+            chapter_path = out_path / chapter_filename
+            print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
+            with open(chapter_path, mode="w") as file:
                 for line in chapter.text:
                     file.write(line)
-            print(f"{chapter.header}: {len(chapter.text)} lines, file: '{chapter_filename}'")
+
+
+def process_directory(in_dir_path, out_path):
+    for dir_path, dirs, files in os.walk(in_dir_path):
+        for file_name in files:
+            file_path = Path(dir_path) / file_name
+            new_out_path = out_path / os.path.relpath(dir_path, in_dir_path) / Path(file_name).stem
+            process_file(file_path, new_out_path)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser.add_argument("input", help="input file or folder")
+    parser.add_argument("--output", help="output folder", default=None)
+    args = parser.parse_args()
+
+    in_path = Path(args.input)
+    out_path_str = args.output
+
+    if in_path.is_file():
+        if out_path_str is None:
+            out_path_str = in_path.stem
+        process_file(in_path, Path(out_path_str))
+    else:
+        if out_path_str is None:
+            out_path_str = in_path.stem + "_split"
+        process_directory(in_path, Path(out_path_str))
