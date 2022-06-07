@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "md_split"
+version = "1.0"
+description = "Splits markdown files at level 1 headings"
+authors = ["Markus Straub"]
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+
+[tool.poetry.dev-dependencies]
+black = "*"
+flake8 = ">=4"
+pytest = "^6"
+ipykernel = "^6.6.0"
+
+[tool.pytest.ini_options]
+addopts = ["-ra", "-W error"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
