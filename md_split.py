@@ -6,15 +6,19 @@ import re
 
 DESCRIPTION = """Splits markdown files at level 1 headings.
 For each chapter a new file with the (sanitized) heading name is written to the output folder.
-Text before the first header is written to a file with the same name as the input file.
+Text before the first heading is written to a file with the same name as the input file.
 TODO: handle name collisions
 """
 FENCES = ["```", "~~~"]
 
-Chapter = namedtuple("Chapter", "header, text")
+Chapter = namedtuple("Chapter", "heading, text")
 
 
 def split_by_h1(text):
+    """
+    Generator that returns a list of chapters.
+    Each chapter's text includes the heading.
+    """
     heading = None
     lines = []
     within_fence = False
@@ -62,8 +66,8 @@ def process_file(in_file_path, out_path):
     with open(in_file_path) as file:
         chapters = split_by_h1(file)
         for chapter in chapters:
-            chapter_filename = get_valid_filename(chapter.header) + ".md"
-            if chapter.header is None:
+            chapter_filename = get_valid_filename(chapter.heading) + ".md"
+            if chapter.heading is None:
                 chapter_filename = in_file_path.name
             chapter_path = out_path / chapter_filename
             print(f"Write {len(chapter.text)} lines to '{chapter_path}'")

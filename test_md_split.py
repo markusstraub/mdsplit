@@ -11,9 +11,9 @@ def test_split_by_h1_simple():
         parts = list(split_by_h1(fh))
         assert len(parts) == 2
 
-        assert parts[0].header == "Header 1"
+        assert parts[0].heading == "Heading 1"
         assert len(parts[0].text) == 7
-        assert parts[1].header == "Header 2"
+        assert parts[1].heading == "Heading 2"
         assert len(parts[1].text) == 3
 
 
@@ -22,13 +22,13 @@ def test_split_by_h1_codeblock():
         parts = list(split_by_h1(fh))
         assert len(parts) == 4
 
-        assert parts[0].header == "Header 1"
+        assert parts[0].heading == "Heading 1"
         assert len(parts[0].text) == 11
-        assert parts[1].header == "Header 2 (dense)"
+        assert parts[1].heading == "Heading 2 (dense)"
         assert len(parts[1].text) == 5
-        assert parts[2].header == "Header 3 (with codeblocks)"
+        assert parts[2].heading == "Heading 3 (with codeblocks)"
         assert len(parts[2].text) == 16
-        assert parts[3].header == "Header 4"
+        assert parts[3].heading == "Heading 4"
         assert len(parts[3].text) == 3
 
 

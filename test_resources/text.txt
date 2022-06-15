@@ -1,2 +1,2 @@
 This is a simple textfile.
-Only files with a .md suffix should be processed.
+Only files with an .md suffix should be processed.

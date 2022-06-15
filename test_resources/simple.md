@@ -1,10 +1,10 @@
-# Header 1
+# Heading 1
 
 This is some text.
 
 - With a list
 - after the text
 
-# Header 2
+# Heading 2
 
 Second chapter.
