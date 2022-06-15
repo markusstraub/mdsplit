@@ -75,6 +75,8 @@ def process_file(in_file_path, out_path):
 def process_directory(in_dir_path, out_path):
     for dir_path, dirs, files in os.walk(in_dir_path):
         for file_name in files:
+            if not Path(file_name).suffix == ".md":
+                break
             file_path = Path(dir_path) / file_name
             new_out_path = out_path / os.path.relpath(dir_path, in_dir_path) / Path(file_name).stem
             process_file(file_path, new_out_path)
