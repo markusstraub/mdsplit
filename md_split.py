@@ -4,10 +4,13 @@ import argparse
 import os
 import re
 
+# TODO use python-approvaltests to test the written files
+# (warning: apparently there are issues with python 3.10)
+
 DESCRIPTION = """Splits markdown files at level 1 headings.
 For each chapter a new file with the (sanitized) heading name is written to the output folder.
 Text before the first heading is written to a file with the same name as the input file.
-TODO: handle name collisions
+Chapters with the same heading are written to the same file.
 """
 FENCES = ["```", "~~~"]
 
@@ -60,7 +63,7 @@ def get_valid_filename(name):
 
 
 def process_file(in_file_path, out_path):
-    print(f"process file '{in_file_path}' to '{out_path}'")
+    print(f"Process file '{in_file_path}' to '{out_path}'")
     print(f"Create output folder '{out_path}'")
     out_path.mkdir(parents=True, exist_ok=False)
     with open(in_file_path) as file:
@@ -71,7 +74,7 @@ def process_file(in_file_path, out_path):
                 chapter_filename = in_file_path.name
             chapter_path = out_path / chapter_filename
             print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
-            with open(chapter_path, mode="w") as file:
+            with open(chapter_path, mode="a") as file:
                 for line in chapter.text:
                     file.write(line)
 
@@ -80,7 +83,7 @@ def process_directory(in_dir_path, out_path):
     for dir_path, dirs, files in os.walk(in_dir_path):
         for file_name in files:
             if not Path(file_name).suffix == ".md":
-                break
+                continue
             file_path = Path(dir_path) / file_name
             new_out_path = out_path / os.path.relpath(dir_path, in_dir_path) / Path(file_name).stem
             process_file(file_path, new_out_path)
