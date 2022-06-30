@@ -10,6 +10,7 @@ Text before the first heading is written to a file with the same name as the inp
 Chapters with the same heading are written to the same file.
 """
 FENCES = ["```", "~~~"]
+VERBOSE = False
 
 Chapter = namedtuple("Chapter", "heading, text")
 
@@ -60,8 +61,9 @@ def get_valid_filename(name):
 
 
 def process_file(in_file_path, out_path):
-    print(f"Process file '{in_file_path}' to '{out_path}'")
-    print(f"Create output folder '{out_path}'")
+    if VERBOSE:
+        print(f"Process file '{in_file_path}' to '{out_path}'")
+        print(f"Create output folder '{out_path}'")
     out_path.mkdir(parents=True, exist_ok=False)
     with open(in_file_path) as file:
         chapters = split_by_h1(file)
@@ -70,7 +72,8 @@ def process_file(in_file_path, out_path):
             if chapter.heading is None:
                 chapter_filename = in_file_path.name
             chapter_path = out_path / chapter_filename
-            print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
+            if VERBOSE:
+                print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
             with open(chapter_path, mode="a") as file:
                 for line in chapter.text:
                     file.write(line)
@@ -89,8 +92,11 @@ def process_directory(in_dir_path, out_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument("input", help="input file or folder")
-    parser.add_argument("--output", help="output folder", default=None)
+    parser.add_argument("-o", "--output", help="output folder", default=None)
+    parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
+
+    VERBOSE = args.verbose
 
     in_path = Path(args.input)
     out_path_str = args.output
