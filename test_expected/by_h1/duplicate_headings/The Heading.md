@@ -10,6 +10,3 @@ Text of the second chapter
 
 .. and for good measure: text of the third chapter
 
-# Finally A Different Heading
-
-phew

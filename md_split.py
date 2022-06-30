@@ -4,9 +4,6 @@ import argparse
 import os
 import re
 
-# TODO use python-approvaltests to test the written files
-# (warning: apparently there are issues with python 3.10)
-
 DESCRIPTION = """Splits markdown files at level 1 headings.
 For each chapter a new file with the (sanitized) heading name is written to the output folder.
 Text before the first heading is written to a file with the same name as the input file.
