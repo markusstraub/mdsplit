@@ -89,9 +89,16 @@ def process_directory(in_dir_path, out_path):
             process_file(file_path, new_out_path)
 
 
-if __name__ == "__main__":
+def run():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument("input", help="input file or folder")
+    # parser.add_argument(
+    #     "--max-level",
+    #     type=int,
+    #     choices=range(1, 7),
+    #     help="maximum heading level to split, default: %(default)s",
+    #     default=1,
+    # )
     parser.add_argument("-o", "--output", help="output folder", default=None)
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
@@ -109,3 +116,7 @@ if __name__ == "__main__":
         if out_path_str is None:
             out_path_str = in_path.stem + "_split"
         process_directory(in_path, Path(out_path_str))
+
+
+if __name__ == "__main__":
+    run()

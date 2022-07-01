@@ -1,8 +1,12 @@
 [tool.poetry]
-name = "md_split"
-version = "1.0"
+name = "md-split"
+version = "0.1"
 description = "Splits markdown files at level 1 headings"
 authors = ["Markus Straub"]
+license = "MIT"
+
+[tool.poetry.scripts]
+md_split = "md_split:run"
 
 [tool.poetry.dependencies]
 python = ">=3.9"
