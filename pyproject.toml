@@ -1,7 +1,8 @@
 [tool.poetry]
 name = "md-split"
-version = "0.1"
+version = "0.2"
 description = "Splits markdown files at level 1 headings"
+readme = "README.md"
 authors = ["Markus Straub"]
 license = "MIT"
 
@@ -16,7 +17,7 @@ black = "*"
 flake8 = ">=4"
 pytest = ">=7"
 ipykernel = ">=6.6"
-pytest-console-scripts = "^1.3.1"
+pytest-console-scripts = ">=1.3.1"
 
 [tool.pytest.ini_options]
 addopts = ["-ra", "-W error"]

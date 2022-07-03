@@ -17,19 +17,26 @@ def test_split_by_h1_simple():
         assert len(parts[1].text) == 3
 
 
-def test_split_by_h1_codeblock():
-    with open("test_resources/codeblock.md") as fh:
+def test_split_by_h1_nested():
+    with open("test_resources/nested.md") as fh:
         parts = list(split_by_h1(fh))
-        assert len(parts) == 4
+        assert len(parts) == 3
 
         assert parts[0].heading == "Heading 1"
         assert len(parts[0].text) == 11
         assert parts[1].heading == "Heading 2 (dense)"
-        assert len(parts[1].text) == 5
-        assert parts[2].heading == "Heading 3 (with codeblocks)"
-        assert len(parts[2].text) == 16
-        assert parts[3].heading == "Heading 4"
-        assert len(parts[3].text) == 3
+        assert len(parts[1].text) == 8
+        assert parts[2].heading == "Heading 3 (deeply nested)"
+        assert len(parts[2].text) == 26
+
+
+def test_split_by_h1_codeblock():
+    with open("test_resources/codeblock.md") as fh:
+        parts = list(split_by_h1(fh))
+        assert len(parts) == 1
+
+        assert parts[0].heading == "Beware of Code Blocks"
+        assert len(parts[0].text) == 21
 
 
 def test_get_valid_filename():

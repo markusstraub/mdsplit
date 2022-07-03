@@ -1,6 +1,6 @@
 # Heading 1
 
-some test
+Text goes here.
 
 ## Heading 1.1
 
@@ -8,4 +8,4 @@ some test
 - with another entry
 - and for good measure a third one
 
-text before heading
+Text directly before heading without an empty line.
