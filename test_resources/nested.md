@@ -43,3 +43,7 @@ Final depth of six levels reached.
 ###### Heading 3.1.1.1.1.2
 
 And a second level-six heading for good measure.
+
+### Heading 3.1.2
+
+End of document.
