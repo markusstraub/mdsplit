@@ -8,6 +8,8 @@ Text goes here.
 - with another entry
 - and for good measure a third one
 
+## Heading 1.2
+
 Text directly before heading without an empty line.
 # Heading 2 (dense)
 And more text wedged between two headings without an empty line.

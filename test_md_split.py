@@ -56,28 +56,42 @@ def test_split_by_heading_simple(max_level):
 @pytest.mark.parametrize("max_level", [1, 3])
 def test_split_by_heading_codeblock(max_level):
     with open("test_resources/codeblock.md") as fh:
-        parts = list(MdSplit.split_by_heading(fh, max_level))
-        assert len(parts) == 1
+        chapters = list(MdSplit.split_by_heading(fh, max_level))
+        assert len(chapters) == 1
 
-        assert parts[0].heading.heading_title == "Beware of Code Blocks"
-        assert len(parts[0].text) == 21
+        assert chapters[0].heading.heading_title == "Beware of Code Blocks"
+        assert len(chapters[0].text) == 21
 
 
 def test_split_by_h1_nested():
     with open("test_resources/nested.md") as fh:
-        parts = list(MdSplit.split_by_heading(fh, 1))
-        assert len(parts) == 3
+        chapters = list(MdSplit.split_by_heading(fh, 1))
+        assert len(chapters) == 3
 
-        assert parts[0].heading.heading_title == "Heading 1"
-        assert len(parts[0].text) == 11
-        assert parts[1].heading.heading_title == "Heading 2 (dense)"
-        assert len(parts[1].text) == 8
-        assert parts[2].heading.heading_title == "Heading 3 (deeply nested)"
-        assert len(parts[2].text) == 30
+        assert chapters[0].heading.heading_title == "Heading 1"
+        assert len(chapters[0].text) == 13
+        assert chapters[1].heading.heading_title == "Heading 2 (dense)"
+        assert len(chapters[1].text) == 8
+        assert chapters[2].heading.heading_title == "Heading 3 (deeply nested)"
+        assert len(chapters[2].text) == 30
 
 
 def test_split_by_h3_nested():
     with open("test_resources/nested.md") as fh:
-        parts = list(MdSplit.split_by_heading(fh, 3))
-        assert len(parts) == 10
-    # TODO test parent headings
+        chapters = list(MdSplit.split_by_heading(fh, 3))
+        assert len(chapters) == 11
+
+        assert chapters[1].heading.heading_title == "Heading 1.1"
+        assert chapters[1].heading.heading_level == 2
+        assert chapters[1].parent_headings == ["Heading 1"]
+        assert len(chapters[1].text) == 6
+
+        assert chapters[2].heading.heading_title == "Heading 1.2"
+        assert chapters[2].heading.heading_level == 2
+        assert chapters[2].parent_headings == ["Heading 1"]
+        assert len(chapters[2].text) == 3
+
+        assert chapters[9].heading.heading_title == "Heading 3.1.1"
+        assert chapters[9].heading.heading_level == 3
+        assert chapters[9].parent_headings == ["Heading 3 (deeply nested)", "Heading 3.1"]
+        assert len(chapters[9].text) == 22

@@ -2,7 +2,9 @@
     "python.formatting.provider": "black",
     "python.testing.pytestArgs": [
         ".",
-        "-s",
-        "-vv"
-    ]
+	"-s",
+	"-vv"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }

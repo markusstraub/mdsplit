@@ -6,10 +6,10 @@ flowchart LR
     subgraph in.md
         SRC[# Heading 1<br>x x x x<br><br># Heading 2<br>y y y y<br><br>## Heading 2.1<br>z z z z]
     end
-    subgraph in_split/Heading 1.md
+    subgraph in/Heading 1.md
         SPLIT_A[# Heading 1<br>x x x x<br><br>]
     end
-    subgraph in_split/Heading 2.md
+    subgraph in/Heading 2.md
         SPLIT_B[# Heading 2<br>y y y y<br><br>## Heading 2.1<br>z z z z]
     end
     SRC --> MD_SPLIT(md_split in.md)

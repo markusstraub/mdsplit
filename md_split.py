@@ -4,12 +4,6 @@ import argparse
 import os
 import re
 
-DESCRIPTION = """Split markdown files at headings.
-
-For each chapter a new file with the (sanitized) heading name is written to the output folder.
-Text before the first heading is written to a file with the same name as the input file.
-Chapters with the same heading are written to the same file.
-"""
 FENCES = ["```", "~~~"]
 MAX_HEADING_LEVEL = 6
 
@@ -17,14 +11,27 @@ Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
 class MdSplit:
+    """Split markdown files at headings.
+
+    For each chapter a new file with the (sanitized) heading name is written to the output folder.
+    Text before the first heading is written to a file with the same name as the input file.
+    Chapters with the same heading are written to the same file.
+    """
+
     def __init__(self, in_path, out_path=None, verbose=False, level=1):
         self.in_path = Path(in_path)
-        if self.in_path.is_file():
+        if not self.in_path.exists():
+            raise FileNotFoundError(
+                f"Input file/directory '{self.in_path}' does not exist. Exiting.."
+            )
+        elif self.in_path.is_file():
             self.out_path = Path(self.in_path.stem) if out_path is None else Path(out_path)
         else:
             self.out_path = (
                 Path(self.in_path.stem + "_split") if out_path is None else Path(out_path)
             )
+        # if self.out_path.exists():
+        #    raise FileExistsError(f"Output directory '{self.out_path}' already exists. Exiting..")
         self.verbose = verbose
         self.level = level
 
@@ -49,16 +56,21 @@ class MdSplit:
         if self.verbose:
             print(f"Process file '{in_file_path}' to '{out_path}'")
             print(f"Create output folder '{out_path}'")
-        out_path.mkdir(parents=True, exist_ok=False)
         with open(in_file_path) as file:
             chapters = self.split_by_heading(file, self.level)
             for chapter in chapters:
+                chapter_dir = out_path
+                for parent in chapter.parent_headings:
+                    chapter_dir = chapter_dir / get_valid_filename(parent)
+                chapter_dir.mkdir(parents=True, exist_ok=True)
+
                 chapter_filename = (
                     in_file_path.name
                     if chapter.heading is None
                     else get_valid_filename(chapter.heading.heading_title) + ".md"
                 )
-                chapter_path = out_path / chapter_filename
+
+                chapter_path = chapter_dir / chapter_filename
                 if self.verbose:
                     print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
                 with open(chapter_path, mode="a") as file:
@@ -89,9 +101,6 @@ class MdSplit:
                     yield Chapter(list(curr_parent_headings), curr_heading_line, curr_lines)
 
                     if curr_heading_line is not None:
-                        print(
-                            f"{'/'.join(curr_parent_headings)}/{curr_heading_line.heading_title}.md"
-                        )
                         if curr_heading_line.heading_level > next_line.heading_level:
                             curr_parent_headings.pop()
                         if curr_heading_line.heading_level < next_line.heading_level:
@@ -137,7 +146,7 @@ def get_valid_filename(name):
 
 
 def run():
-    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser = argparse.ArgumentParser(description=MdSplit.__doc__)
     parser.add_argument("input", help="input file or folder")
     parser.add_argument(
         "-l",
