@@ -36,6 +36,12 @@ def test_line():
     line = Line("####### Headings > 7 are not defined in Markdown")
     assert not line.is_heading()
 
+    line = Line("   # Heading - up to three spaces are allowed according to commonmark")
+    assert line.is_heading()
+
+    line = Line("    # four spaces are too much")
+    assert not line.is_heading()
+
 
 @pytest.mark.parametrize("max_level", [1, 3])
 def test_split_by_heading_simple(max_level):

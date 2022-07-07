@@ -2,19 +2,22 @@
 
 `mdsplit` is a python command line tool to
 **split markdown files** into chapters
-**at (a user-defined) heading level**.
+**at (a user-defined) [ATX heading](https://spec.commonmark.org/0.30/#atx-headings) level**.
 
 Each chapter (or subchapter) is written to its own file,
 which is named after the heading title.
 These files are written to subdirectories representing the document's structure.
 
-Note:
+**Note:**
 - The output is *guaranteed to be identical* with the input
   (except for the separation into multiple files of course).
     - This means: no touching of whitespace or changing `-` to `*` of your lists
       like some viusual markdown editors tend to do.
 - Text before the first heading is written to a file with the same name as the markdown file.
 - Chapters with the same heading name are written to the same file.
+
+**Limitations:**
+- [Setext headings](https://spec.commonmark.org/0.30/#setext-headings) are not supported
 
 ## Installation
 

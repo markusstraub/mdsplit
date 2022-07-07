@@ -3,6 +3,7 @@ from pathlib import Path
 import argparse
 import os
 import re
+import sys
 
 FENCES = ["```", "~~~"]
 MAX_HEADING_LEVEL = 6
@@ -11,7 +12,7 @@ Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
 class MdSplit:
-    """Split markdown files into chapters at (a user-defined) heading level.
+    """Split markdown files into chapters at (a user-defined) ATX heading level.
 
     Each chapter (or subchapter) is written to its own file,
     which is named after the heading title.
@@ -29,9 +30,7 @@ class MdSplit:
     def __init__(self, in_path, out_path=None, verbose=False, level=1):
         self.in_path = Path(in_path)
         if not self.in_path.exists():
-            raise FileNotFoundError(
-                f"Input file/directory '{self.in_path}' does not exist. Exiting.."
-            )
+            raise MdSplitError(f"Input file/directory '{self.in_path}' does not exist. Exiting..")
         elif self.in_path.is_file():
             self.out_path = Path(self.in_path.stem) if out_path is None else Path(out_path)
         else:
@@ -122,12 +121,20 @@ class MdSplit:
 
 
 class Line:
+    """
+    Detect code blocks and ATX headings.
+
+    Headings according to commonmark:
+    - only 6 valid levels
+    - up to three spaces before the first # is ok
+    """
+
     def __init__(self, line):
         self.full_line = line
         self.heading_level = 0
         self.heading_title = None
 
-        result = re.search("(#+) (.*)", line)
+        result = re.search("^[ ]?[ ]?[ ]?(#+) (.*)", line)
         if result is not None and len(result[1]) <= MAX_HEADING_LEVEL:
             self.heading_level = len(result[1])
             self.heading_title = result[2]
@@ -140,6 +147,10 @@ class Line:
 
     def is_heading(self):
         return self.heading_level > 0
+
+
+class MdSplitError(Exception):
+    """MdSplit must stop but has an explanation string to be shown to the user"""
 
 
 def get_valid_filename(name):
@@ -170,8 +181,13 @@ def run():
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
-    MdSplit(args.input, out_path=args.output, verbose=args.verbose, level=args.max_level).process()
-    # TODO no stacktrace for user errors (in file does not exist)
+    try:
+        MdSplit(
+            args.input, out_path=args.output, verbose=args.verbose, level=args.max_level
+        ).process()
+    except MdSplitError as e:
+        print(e)
+        sys.exit(1)
     # TODO we should not write to existing folder.. or should we?
 
 
