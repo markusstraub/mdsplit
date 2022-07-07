@@ -1,7 +1,7 @@
 import pytest
-from md_split import MdSplit
-from md_split import Line
-from md_split import get_valid_filename
+from mdsplit import MdSplit
+from mdsplit import Line
+from mdsplit import get_valid_filename
 
 
 def test_get_valid_filename():
