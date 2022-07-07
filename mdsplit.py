@@ -14,6 +14,7 @@ class MdSplit:
     """Split markdown files at headings.
 
     For each chapter a new file with the (sanitized) heading name is written to the output folder.
+    If splitting is requested for heading levels > 1 a folder structure is created.
     Text before the first heading is written to a file with the same name as the input file.
     Chapters with the same heading are written to the same file.
     """
@@ -161,6 +162,9 @@ def run():
     args = parser.parse_args()
 
     MdSplit(args.input, out_path=args.output, verbose=args.verbose, level=args.max_level).process()
+    # TODO no stacktrace for user errors (in file does not exist)
+    # TODO we should not write to existing folder.. or should we?
+    # TODO document that the lines stay exactly the same :)
 
 
 if __name__ == "__main__":

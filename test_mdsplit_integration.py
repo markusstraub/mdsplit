@@ -27,7 +27,7 @@ def assert_same_file_contents(tmp_dir, expected_dir):
 
 
 def test_default_invocation(tmp_path, script_runner):
-    ret = script_runner.run("md_split.py", "--output", str(tmp_path), "test_resources")
+    ret = script_runner.run("mdsplit.py", "--output", str(tmp_path), "test_resources")
     assert ret.success
     assert_same_file_list(tmp_path, "test_expected/by_h1")
     assert_same_file_contents(tmp_path, "test_expected/by_h1")
@@ -35,7 +35,7 @@ def test_default_invocation(tmp_path, script_runner):
 
 def test_h3_split(tmp_path, script_runner):
     ret = script_runner.run(
-        "md_split.py", "--output", str(tmp_path), "--max-level", "3", "test_resources/nested.md"
+        "mdsplit.py", "--output", str(tmp_path), "--max-level", "3", "test_resources/nested.md"
     )
     assert ret.success
     assert_same_file_list(tmp_path, "test_expected/by_h3/nested")
