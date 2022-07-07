@@ -124,9 +124,12 @@ class Line:
     """
     Detect code blocks and ATX headings.
 
-    Headings according to commonmark:
+    Headings are detected according to commonmark, e.g.:
     - only 6 valid levels
     - up to three spaces before the first # is ok
+    - empty heading is valid
+    - closing hashes are stripped
+    - whitespace around title are stripped
     """
 
     def __init__(self, line):
@@ -134,10 +137,17 @@ class Line:
         self.heading_level = 0
         self.heading_title = None
 
-        result = re.search("^[ ]?[ ]?[ ]?(#+) (.*)", line)
-        if result is not None and len(result[1]) <= MAX_HEADING_LEVEL:
+        result = re.search("^[ ]{0,3}(#+)(.*)", line)
+        if result is not None and (len(result[1]) <= MAX_HEADING_LEVEL):
+            title = result[2]
+            if len(title) > 0 and not (title.startswith(" ") or title.startswith("\t")):
+                # if there is a title it must start with space or tab
+                return
             self.heading_level = len(result[1])
-            self.heading_title = result[2]
+
+            # TODO strip whitespace and closing hashes
+            title = title.strip().rstrip("#").rstrip()
+            self.heading_title = title
 
     def is_fence(self):
         for fence in FENCES:

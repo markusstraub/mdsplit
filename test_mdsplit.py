@@ -42,6 +42,22 @@ def test_line():
     line = Line("    # four spaces are too much")
     assert not line.is_heading()
 
+    line = Line("#At least one space or tab required after heading")
+    assert not line.is_heading()
+
+    line = Line("#\ta tab is ok")
+    assert line.is_heading()
+
+    line = Line("###")  # headings without title (also without a space) are allowed
+    assert line.heading_level == 3
+    assert line.heading_title == ""
+
+    line = Line("#\t  please strip\t\t  ")
+    assert line.heading_title == "please strip"
+
+    line = Line("## strip rightmost hashes #########  ")
+    assert line.heading_title == "strip rightmost hashes"
+
 
 @pytest.mark.parametrize("max_level", [1, 3])
 def test_split_by_heading_simple(max_level):
