@@ -12,7 +12,7 @@ Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
 class MdSplit:
-    """Split markdown files into chapters at (a user-defined) ATX heading level.
+    """Split markdown files into chapters at a given heading level.
 
     Each chapter (or subchapter) is written to its own file,
     which is named after the heading title.
@@ -25,6 +25,7 @@ class MdSplit:
           like some viusual markdown editors tend to do.
     - Text before the first heading is written to a file with the same name as the markdown file.
     - Chapters with the same heading name are written to the same file.
+    - Only ATX headings (such as # Heading 1) are supported.
     """
 
     def __init__(self, in_path, out_path=None, verbose=False, level=1):
@@ -134,9 +135,11 @@ class Line:
 
     def __init__(self, line):
         self.full_line = line
+        self._detect_heading(line)
+
+    def _detect_heading(self, line):
         self.heading_level = 0
         self.heading_title = None
-
         result = re.search("^[ ]{0,3}(#+)(.*)", line)
         if result is not None and (len(result[1]) <= MAX_HEADING_LEVEL):
             title = result[2]
@@ -145,7 +148,7 @@ class Line:
                 return
             self.heading_level = len(result[1])
 
-            # TODO strip whitespace and closing hashes
+            # strip whitespace and closing hashes
             title = title.strip().rstrip("#").rstrip()
             self.heading_title = title
 

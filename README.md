@@ -2,7 +2,7 @@
 
 `mdsplit` is a python command line tool to
 **split markdown files** into chapters
-**at (a user-defined) [ATX heading](https://spec.commonmark.org/0.30/#atx-headings) level**.
+**at a given [heading level](https://spec.commonmark.org/0.30/#atx-headings)**.
 
 Each chapter (or subchapter) is written to its own file,
 which is named after the heading title.
@@ -17,7 +17,10 @@ These files are written to subdirectories representing the document's structure.
 - Chapters with the same heading name are written to the same file.
 
 **Limitations:**
-- [Setext headings](https://spec.commonmark.org/0.30/#setext-headings) are not supported
+- Only [ATX headings](https://spec.commonmark.org/0.30/#atx-headings) 
+  such as `# Heading 1`) are supported.
+  [Setext headings](https://spec.commonmark.org/0.30/#setext-headings)
+  (underlined headings) are not recognised.
 
 ## Installation
 
@@ -108,3 +111,7 @@ Release new version
     poetry publish
 
 [Download statistics](https://pypistats.org/packages/mdsplit)
+
+### Potential TODOs
+
+- [test multiple python versions](https://consoledotlog.co.uk/tox-with-pyenv-and-poetry-to-test-projects-with-multiple-python-versions.html)
