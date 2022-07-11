@@ -18,7 +18,7 @@ These files are written to subdirectories representing the document's structure.
 
 **Limitations:**
 - Only [ATX headings](https://spec.commonmark.org/0.30/#atx-headings) 
-  such as `# Heading 1`) are supported.
+  such as `# Heading 1` are supported.
   [Setext headings](https://spec.commonmark.org/0.30/#setext-headings)
   (underlined headings) are not recognised.
 
@@ -35,7 +35,7 @@ Or simply download [mdsplit.py](mdsplit.py) and run it (it does not use any depe
 
 ## Usage
 
-**Split by heading 1** and write to an output folder based on the input name 
+**Split a file at level 1 headings**, e.g. `# This Heading`, and write results to an output folder based on the input name:
 
 ```bash
 mdsplit in.md
@@ -62,7 +62,7 @@ flowchart LR
     style MDSPLIT fill:#000,color:#0F0
 ```
 
-**Split by heading 2**
+**Split a file at level 2 headings** and higher, e.g. `# This Heading` and `## That Heading`, and write to a specific output directory:
 
 ```bash
 mdsplit in.md --max-level 2 --output out
