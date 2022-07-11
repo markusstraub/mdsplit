@@ -93,7 +93,15 @@ flowchart LR
     style MDSPLIT fill:#000,color:#0F0
 ```
 
-## Development
+## Development (Ubuntu 22.04)
+
+Add the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa)
+and install additional python versions for testing
+
+    sudo add-apt-repository ppa:deadsnakes/ppa
+    sudo apt install python3.7 python3.7-distutils
+    sudo apt install python3.8 python3.8-distutils
+    sudo apt install python3.9 python3.9-distutils
 
 Install [poetry](https://python-poetry.org)
 
@@ -101,9 +109,13 @@ Prepare virtual environment and download dependencies
 
     poetry install
 
-Run tests
+Run tests (for the default python version)
 
     poetry run pytest
+
+Run tests for all supported python versions
+
+    tox
 
 Release new version
 
@@ -111,7 +123,3 @@ Release new version
     poetry publish
 
 [Download statistics](https://pypistats.org/packages/mdsplit)
-
-### Potential TODOs
-
-- [test multiple python versions](https://consoledotlog.co.uk/tox-with-pyenv-and-poetry-to-test-projects-with-multiple-python-versions.html)
