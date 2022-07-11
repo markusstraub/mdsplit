@@ -19,6 +19,7 @@ class MdSplit:
     These files are written to subdirectories representing the document's structure.
 
     Note:
+    - *Code blocks* (```````)are detected (and headers inside ignored)
     - The output is *guaranteed to be identical* with the input
       (except for the separation into multiple files of course).
         - This means: no touching of whitespace or changing `-` to `*` of your lists
