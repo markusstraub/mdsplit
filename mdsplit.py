@@ -29,7 +29,7 @@ class MdSplit:
     - Only ATX headings (such as # Heading 1) are supported.
     """
 
-    def __init__(self, in_path, out_path=None, verbose=False, level=1):
+    def __init__(self, in_path, level=1, out_path=None, force=False, verbose=False):
         self.in_path = Path(in_path)
         if not self.in_path.exists():
             raise MdSplitError(f"Input file/directory '{self.in_path}' does not exist. Exiting..")
@@ -39,8 +39,11 @@ class MdSplit:
             self.out_path = (
                 Path(self.in_path.stem + "_split") if out_path is None else Path(out_path)
             )
-        # if self.out_path.exists():
-        #    raise FileExistsError(f"Output directory '{self.out_path}' already exists. Exiting..")
+        if self.out_path.exists():
+            if force:
+                print(f"Warning: writing output to existing directory '{self.out_path}'")
+            else:
+                raise MdSplitError(f"Output directory '{self.out_path}' already exists. Exiting..")
         self.verbose = verbose
         self.level = level
 
@@ -191,18 +194,27 @@ def run():
         help="maximum heading level to split, default: %(default)s",
         default=1,
     )
-    parser.add_argument("-o", "--output", help="output folder", default=None)
+    parser.add_argument("-o", "--output", default=None, help="output folder (must not exist)")
+    parser.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="write into output folder even if it already exists",
+    )
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
     try:
         MdSplit(
-            args.input, out_path=args.output, verbose=args.verbose, level=args.max_level
+            args.input,
+            level=args.max_level,
+            out_path=args.output,
+            force=args.force,
+            verbose=args.verbose,
         ).process()
     except MdSplitError as e:
         print(e)
         sys.exit(1)
-    # TODO we should not write to existing folder.. or should we?
 
 
 if __name__ == "__main__":

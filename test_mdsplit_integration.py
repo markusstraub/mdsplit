@@ -26,8 +26,13 @@ def assert_same_file_contents(tmp_dir, expected_dir):
             assert actual == expected, f"errror while comparing {expected_file}"
 
 
-def test_default_invocation(tmp_path, script_runner):
+def test_fail_on_existing_output_directory(tmp_path, script_runner):
     ret = script_runner.run("mdsplit.py", "--output", str(tmp_path), "test_resources")
+    assert not ret.success
+
+
+def test_default_invocation(tmp_path, script_runner):
+    ret = script_runner.run("mdsplit.py", "--output", str(tmp_path), "test_resources", "--force")
     assert ret.success
     assert_same_file_list(tmp_path, "test_expected/by_h1")
     assert_same_file_contents(tmp_path, "test_expected/by_h1")
@@ -35,11 +40,14 @@ def test_default_invocation(tmp_path, script_runner):
 
 def test_h3_split(tmp_path, script_runner):
     ret = script_runner.run(
-        "mdsplit.py", "--output", str(tmp_path), "--max-level", "3", "test_resources/nested.md"
+        "mdsplit.py",
+        "--output",
+        str(tmp_path),
+        "--max-level",
+        "3",
+        "test_resources/nested.md",
+        "--force",
     )
     assert ret.success
     assert_same_file_list(tmp_path, "test_expected/by_h3/nested")
     assert_same_file_contents(tmp_path, "test_expected/by_h3/nested")
-
-
-# TODO what should we do in the case of folder name conflicts?
