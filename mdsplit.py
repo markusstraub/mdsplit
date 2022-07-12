@@ -46,6 +46,7 @@ class MdSplit:
                 raise MdSplitError(f"Output directory '{self.out_path}' already exists. Exiting..")
         self.verbose = verbose
         self.level = level
+        self.stats = Stats()
 
     def process(self):
         if self.in_path.is_file():
@@ -69,8 +70,10 @@ class MdSplit:
             print(f"Process file '{in_file_path}' to '{out_path}'")
             print(f"Create output folder '{out_path}'")
         with open(in_file_path) as file:
+            self.stats.in_files += 1
             chapters = self.split_by_heading(file, self.level)
             for chapter in chapters:
+                self.stats.chapters += 1
                 chapter_dir = out_path
                 for parent in chapter.parent_headings:
                     chapter_dir = chapter_dir / get_valid_filename(parent)
@@ -85,6 +88,8 @@ class MdSplit:
                 chapter_path = chapter_dir / chapter_filename
                 if self.verbose:
                     print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
+                if not chapter_path.exists():
+                    self.stats.new_out_files += 1
                 with open(chapter_path, mode="a") as file:
                     for line in chapter.text:
                         file.write(line)
@@ -170,6 +175,13 @@ class MdSplitError(Exception):
     """MdSplit must stop but has an explanation string to be shown to the user"""
 
 
+class Stats:
+    def __init__(self):
+        self.in_files = 0
+        self.new_out_files = 0
+        self.chapters = 0
+
+
 def get_valid_filename(name):
     """
     Adapted from https://github.com/django/django/blob/main/django/utils/text.py
@@ -205,13 +217,18 @@ def run():
     args = parser.parse_args()
 
     try:
-        MdSplit(
+        splitter = MdSplit(
             args.input,
             level=args.max_level,
             out_path=args.output,
             force=args.force,
             verbose=args.verbose,
-        ).process()
+        )
+        splitter.process()
+        print("Splittig result:")
+        print(f"- {splitter.stats.in_files} input files ({splitter.in_path})")
+        print(f"- {splitter.stats.chapters} extracted chapters")
+        print(f"- {splitter.stats.new_out_files} new output files ({splitter.out_path})")
     except MdSplitError as e:
         print(e)
         sys.exit(1)

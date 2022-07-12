@@ -37,6 +37,12 @@ def test_default_invocation(tmp_path, script_runner):
     assert_same_file_list(tmp_path, "test_expected/by_h1")
     assert_same_file_contents(tmp_path, "test_expected/by_h1")
 
+    # is there a way to access the Stats object?
+    # that would be more elegant than comparing stdout
+    assert "- 7 input files" in ret.stdout
+    assert "- 15 extracted chapters" in ret.stdout
+    assert "- 13 new output files" in ret.stdout
+
 
 def test_h3_split(tmp_path, script_runner):
     ret = script_runner.run(
