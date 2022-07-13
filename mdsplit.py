@@ -1,3 +1,21 @@
+"""Split markdown files into chapters at a given heading level.
+
+Each chapter (or subchapter) is written to its own file,
+which is named after the heading title.
+These files are written to subdirectories representing the document's structure.
+
+Note:
+- *Code blocks* (```)are detected (and headers inside ignored)
+- The output is *guaranteed to be identical* with the input
+    (except for the separation into multiple files of course).
+    - This means: no touching of whitespace or changing `-` to `*` of your lists
+        like some viusual markdown editors tend to do.
+- Text before the first heading is written to a file with the same name as the markdown file.
+- Chapters with the same heading name are written to the same file.
+- Only ATX headings (such as # Heading 1) are supported.
+"""
+
+from abc import ABC, abstractmethod
 from collections import namedtuple
 from pathlib import Path
 import argparse
@@ -7,29 +25,81 @@ import sys
 
 FENCES = ["```", "~~~"]
 MAX_HEADING_LEVEL = 6
+DIR_SUFFIX = "_split"
 
 Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
-class MdSplit:
-    """Split markdown files into chapters at a given heading level.
+class Splitter(ABC):
+    def __init__(self, level, force, verbose):
+        self.level = level
+        self.force = force
+        self.verbose = verbose
+        self.stats = Stats()
 
-    Each chapter (or subchapter) is written to its own file,
-    which is named after the heading title.
-    These files are written to subdirectories representing the document's structure.
+    @abstractmethod
+    def process(self):
+        pass
 
-    Note:
-    - *Code blocks* (`` ``` ``)are detected (and headers inside ignored)
-    - The output is *guaranteed to be identical* with the input
-      (except for the separation into multiple files of course).
-        - This means: no touching of whitespace or changing `-` to `*` of your lists
-          like some viusual markdown editors tend to do.
-    - Text before the first heading is written to a file with the same name as the markdown file.
-    - Chapters with the same heading name are written to the same file.
-    - Only ATX headings (such as # Heading 1) are supported.
-    """
+    @abstractmethod
+    def print_stats(self):
+        pass
 
-    def __init__(self, in_path, level=1, out_path=None, force=False, verbose=False):
+    def process_stream(self, in_stream, fallback_out_file_name, out_path):
+        if self.verbose:
+            print(f"Create output folder '{out_path}'")
+
+        self.stats.in_files += 1
+        chapters = split_by_heading(in_stream, self.level)
+        for chapter in chapters:
+            self.stats.chapters += 1
+            chapter_dir = out_path
+            for parent in chapter.parent_headings:
+                chapter_dir = chapter_dir / get_valid_filename(parent)
+            chapter_dir.mkdir(parents=True, exist_ok=True)
+
+            chapter_filename = (
+                fallback_out_file_name
+                if chapter.heading is None
+                else get_valid_filename(chapter.heading.heading_title) + ".md"
+            )
+
+            chapter_path = chapter_dir / chapter_filename
+            if self.verbose:
+                print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
+            if not chapter_path.exists():
+                self.stats.new_out_files += 1
+            with open(chapter_path, mode="a") as file:
+                for line in chapter.text:
+                    file.write(line)
+
+
+class StdinSplitter(Splitter):
+    """Split content from stdin"""
+
+    def __init__(self, level, out_path, force, verbose):
+        super().__init__(level, force, verbose)
+        self.out_path = Path(DIR_SUFFIX) if out_path is None else Path(out_path)
+        if self.out_path.exists():
+            if self.force:
+                print(f"Warning: writing output to existing directory '{self.out_path}'")
+            else:
+                raise MdSplitError(f"Output directory '{self.out_path}' already exists. Exiting..")
+
+    def process(self):
+        self.process_stream(sys.stdin, "stdin.md", self.out_path)
+
+    def print_stats(self):
+        print("Splittig result (from stdin):")
+        print(f"- {self.stats.chapters} extracted chapters")
+        print(f"- {self.stats.new_out_files} new output files ({self.out_path})")
+
+
+class PathBasedSplitter(Splitter):
+    """Split a specific file or all .md files found in a directory (recursively)"""
+
+    def __init__(self, in_path, level, out_path, force, verbose):
+        super().__init__(level, force, verbose)
         self.in_path = Path(in_path)
         if not self.in_path.exists():
             raise MdSplitError(f"Input file/directory '{self.in_path}' does not exist. Exiting..")
@@ -37,16 +107,13 @@ class MdSplit:
             self.out_path = Path(self.in_path.stem) if out_path is None else Path(out_path)
         else:
             self.out_path = (
-                Path(self.in_path.stem + "_split") if out_path is None else Path(out_path)
+                Path(self.in_path.stem + DIR_SUFFIX) if out_path is None else Path(out_path)
             )
         if self.out_path.exists():
             if force:
                 print(f"Warning: writing output to existing directory '{self.out_path}'")
             else:
                 raise MdSplitError(f"Output directory '{self.out_path}' already exists. Exiting..")
-        self.verbose = verbose
-        self.level = level
-        self.stats = Stats()
 
     def process(self):
         if self.in_path.is_file():
@@ -68,66 +135,49 @@ class MdSplit:
     def process_file(self, in_file_path, out_path):
         if self.verbose:
             print(f"Process file '{in_file_path}' to '{out_path}'")
-            print(f"Create output folder '{out_path}'")
-        with open(in_file_path) as file:
-            self.stats.in_files += 1
-            chapters = self.split_by_heading(file, self.level)
-            for chapter in chapters:
-                self.stats.chapters += 1
-                chapter_dir = out_path
-                for parent in chapter.parent_headings:
-                    chapter_dir = chapter_dir / get_valid_filename(parent)
-                chapter_dir.mkdir(parents=True, exist_ok=True)
+        with open(in_file_path) as stream:
+            self.process_stream(stream, in_file_path.name, out_path)
 
-                chapter_filename = (
-                    in_file_path.name
-                    if chapter.heading is None
-                    else get_valid_filename(chapter.heading.heading_title) + ".md"
-                )
+    def print_stats(self):
+        print("Splittig result:")
+        print(f"- {self.stats.in_files} input files ({self.in_path})")
+        print(f"- {self.stats.chapters} extracted chapters")
+        print(f"- {self.stats.new_out_files} new output files ({self.out_path})")
 
-                chapter_path = chapter_dir / chapter_filename
-                if self.verbose:
-                    print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
-                if not chapter_path.exists():
-                    self.stats.new_out_files += 1
-                with open(chapter_path, mode="a") as file:
-                    for line in chapter.text:
-                        file.write(line)
 
-    @staticmethod
-    def split_by_heading(text, max_level):
-        """
-        Generator that returns a list of chapters from text.
-        Each chapter's text includes the heading line.
-        """
-        curr_parent_headings = []
-        curr_heading_line = None
-        curr_lines = []
-        within_fence = False
-        for next_line in text:
-            next_line = Line(next_line)
+def split_by_heading(text, max_level):
+    """
+    Generator that returns a list of chapters from text.
+    Each chapter's text includes the heading line.
+    """
+    curr_parent_headings = []
+    curr_heading_line = None
+    curr_lines = []
+    within_fence = False
+    for next_line in text:
+        next_line = Line(next_line)
 
-            if next_line.is_fence():
-                within_fence = not within_fence
+        if next_line.is_fence():
+            within_fence = not within_fence
 
-            is_chapter_finished = (
-                not within_fence and next_line.is_heading() and next_line.heading_level <= max_level
-            )
-            if is_chapter_finished:
-                if len(curr_lines) > 0:
-                    yield Chapter(list(curr_parent_headings), curr_heading_line, curr_lines)
+        is_chapter_finished = (
+            not within_fence and next_line.is_heading() and next_line.heading_level <= max_level
+        )
+        if is_chapter_finished:
+            if len(curr_lines) > 0:
+                yield Chapter(list(curr_parent_headings), curr_heading_line, curr_lines)
 
-                    if curr_heading_line is not None:
-                        if curr_heading_line.heading_level > next_line.heading_level:
-                            curr_parent_headings.pop()
-                        if curr_heading_line.heading_level < next_line.heading_level:
-                            curr_parent_headings.append(curr_heading_line.heading_title)
+                if curr_heading_line is not None:
+                    if curr_heading_line.heading_level > next_line.heading_level:
+                        curr_parent_headings.pop()
+                    if curr_heading_line.heading_level < next_line.heading_level:
+                        curr_parent_headings.append(curr_heading_line.heading_title)
 
-                curr_heading_line = next_line
-                curr_lines = []
+            curr_heading_line = next_line
+            curr_lines = []
 
-            curr_lines.append(next_line.full_line)
-        yield Chapter(curr_parent_headings, curr_heading_line, curr_lines)
+        curr_lines.append(next_line.full_line)
+    yield Chapter(curr_parent_headings, curr_heading_line, curr_lines)
 
 
 class Line:
@@ -193,11 +243,17 @@ def get_valid_filename(name):
     return s
 
 
-def run():
+def main():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter, description=MdSplit.__doc__
+        formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__
     )
-    parser.add_argument("input", help="input file or folder")
+    # not using argparse.FileType because I don't want an open file handle yet
+    parser.add_argument(
+        "input",
+        nargs="?",
+        help="path to input file/folder (omit or set to '-' to read from stdin)",
+        default="-",
+    )
     parser.add_argument(
         "-l",
         "--max-level",
@@ -206,7 +262,9 @@ def run():
         help="maximum heading level to split, default: %(default)s",
         default=1,
     )
-    parser.add_argument("-o", "--output", default=None, help="output folder (must not exist)")
+    parser.add_argument(
+        "-o", "--output", default=None, help="path to output folder (must not exist)"
+    )
     parser.add_argument(
         "-f",
         "--force",
@@ -217,22 +275,23 @@ def run():
     args = parser.parse_args()
 
     try:
-        splitter = MdSplit(
-            args.input,
-            level=args.max_level,
-            out_path=args.output,
-            force=args.force,
-            verbose=args.verbose,
+        splitter_args = {
+            "level": args.max_level,
+            "out_path": args.output,
+            "force": args.force,
+            "verbose": args.verbose,
+        }
+        splitter = (
+            StdinSplitter(**splitter_args)
+            if args.input == "-"
+            else PathBasedSplitter(args.input, **splitter_args)
         )
         splitter.process()
-        print("Splittig result:")
-        print(f"- {splitter.stats.in_files} input files ({splitter.in_path})")
-        print(f"- {splitter.stats.chapters} extracted chapters")
-        print(f"- {splitter.stats.new_out_files} new output files ({splitter.out_path})")
+        splitter.print_stats()
     except MdSplitError as e:
         print(e)
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    run()
+    main()

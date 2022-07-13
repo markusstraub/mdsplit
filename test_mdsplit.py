@@ -1,7 +1,7 @@
 import pytest
-from mdsplit import MdSplit
 from mdsplit import Line
 from mdsplit import get_valid_filename
+from mdsplit import split_by_heading
 
 
 def test_get_valid_filename():
@@ -62,7 +62,7 @@ def test_line():
 @pytest.mark.parametrize("max_level", [1, 3])
 def test_split_by_heading_simple(max_level):
     with open("test_resources/simple.md") as fh:
-        chapters = list(MdSplit.split_by_heading(fh, max_level))
+        chapters = list(split_by_heading(fh, max_level))
         assert len(chapters) == 2
 
         assert chapters[0].heading.heading_title == "Heading 1"
@@ -78,7 +78,7 @@ def test_split_by_heading_simple(max_level):
 @pytest.mark.parametrize("max_level", [1, 3])
 def test_split_by_heading_codeblock(max_level):
     with open("test_resources/codeblock.md") as fh:
-        chapters = list(MdSplit.split_by_heading(fh, max_level))
+        chapters = list(split_by_heading(fh, max_level))
         assert len(chapters) == 1
 
         assert chapters[0].heading.heading_title == "Beware of Code Blocks"
@@ -87,7 +87,7 @@ def test_split_by_heading_codeblock(max_level):
 
 def test_split_by_h1_nested():
     with open("test_resources/nested.md") as fh:
-        chapters = list(MdSplit.split_by_heading(fh, 1))
+        chapters = list(split_by_heading(fh, 1))
         assert len(chapters) == 3
 
         assert chapters[0].heading.heading_title == "Heading 1"
@@ -100,7 +100,7 @@ def test_split_by_h1_nested():
 
 def test_split_by_h3_nested():
     with open("test_resources/nested.md") as fh:
-        chapters = list(MdSplit.split_by_heading(fh, 3))
+        chapters = list(split_by_heading(fh, 3))
         assert len(chapters) == 11
 
         assert chapters[1].heading.heading_title == "Heading 1.1"
