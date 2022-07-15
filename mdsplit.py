@@ -91,8 +91,8 @@ class StdinSplitter(Splitter):
 
     def print_stats(self):
         print("Splittig result (from stdin):")
-        print(f"- {self.stats.chapters} extracted chapters")
-        print(f"- {self.stats.new_out_files} new output files ({self.out_path})")
+        print(f"- {self.stats.chapters} extracted chapter(s)")
+        print(f"- {self.stats.new_out_files} new output file(s) ({self.out_path})")
 
 
 class PathBasedSplitter(Splitter):
@@ -140,9 +140,9 @@ class PathBasedSplitter(Splitter):
 
     def print_stats(self):
         print("Splittig result:")
-        print(f"- {self.stats.in_files} input files ({self.in_path})")
-        print(f"- {self.stats.chapters} extracted chapters")
-        print(f"- {self.stats.new_out_files} new output files ({self.out_path})")
+        print(f"- {self.stats.in_files} input file(s) ({self.in_path})")
+        print(f"- {self.stats.chapters} extracted chapter(s)")
+        print(f"- {self.stats.new_out_files} new output file(s) ({self.out_path})")
 
 
 def split_by_heading(text, max_level):
