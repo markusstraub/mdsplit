@@ -57,3 +57,6 @@ def test_h3_split(tmp_path, script_runner):
     assert ret.success
     assert_same_file_list(tmp_path, "test_expected/by_h3/nested")
     assert_same_file_contents(tmp_path, "test_expected/by_h3/nested")
+
+
+# TODO how could we test stdin handling?

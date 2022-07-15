@@ -94,6 +94,12 @@ flowchart LR
     style MDSPLIT fill:#000,color:#0F0
 ```
 
+**Split markdown from stdin**:
+
+```bash
+cat in.md | mdsplit --output out
+```
+
 ## Development (Ubuntu 22.04)
 
 Add the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa)
