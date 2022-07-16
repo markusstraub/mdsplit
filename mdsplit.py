@@ -17,6 +17,7 @@ Note:
 
 from abc import ABC, abstractmethod
 from collections import namedtuple
+from dataclasses import dataclass
 from pathlib import Path
 import argparse
 import os
@@ -225,11 +226,11 @@ class MdSplitError(Exception):
     """MdSplit must stop but has an explanation string to be shown to the user"""
 
 
+@dataclass
 class Stats:
-    def __init__(self):
-        self.in_files = 0
-        self.new_out_files = 0
-        self.chapters = 0
+    in_files: int = 0
+    new_out_files: int = 0
+    chapters: int = 0
 
 
 def get_valid_filename(name):
