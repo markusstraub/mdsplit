@@ -31,7 +31,8 @@ def test_fail_on_existing_output_directory(tmp_path, script_runner):
     assert not ret.success
 
 
-def test_default_invocation(tmp_path, script_runner):
+def test_default_h1_split(tmp_path, script_runner):
+    # --force required because the tmp_path will already be created
     ret = script_runner.run("mdsplit.py", "--output", str(tmp_path), "test_resources", "--force")
     assert ret.success
     assert_same_file_list(tmp_path, "test_expected/by_h1")
@@ -39,9 +40,9 @@ def test_default_invocation(tmp_path, script_runner):
 
     # is there a way to access the Stats object?
     # that would be more elegant than comparing stdout
-    assert "- 7 input files" in ret.stdout
-    assert "- 15 extracted chapters" in ret.stdout
-    assert "- 13 new output files" in ret.stdout
+    assert "- 7 input file(s)" in ret.stdout
+    assert "- 15 extracted chapter(s)" in ret.stdout
+    assert "- 13 new output file(s)" in ret.stdout
 
 
 def test_h3_split(tmp_path, script_runner):
