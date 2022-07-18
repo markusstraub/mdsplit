@@ -151,7 +151,7 @@ def split_by_heading(text, max_level):
     Generator that returns a list of chapters from text.
     Each chapter's text includes the heading line.
     """
-    curr_parent_headings = []
+    curr_parent_headings = [None] * MAX_HEADING_LEVEL
     curr_heading_line = None
     curr_lines = []
     within_fence = False
@@ -166,19 +166,29 @@ def split_by_heading(text, max_level):
         )
         if is_chapter_finished:
             if len(curr_lines) > 0:
-                yield Chapter(list(curr_parent_headings), curr_heading_line, curr_lines)
+                parents = __get_parents(curr_parent_headings, curr_heading_line)
+                yield Chapter(parents, curr_heading_line, curr_lines)
 
                 if curr_heading_line is not None:
-                    if curr_heading_line.heading_level > next_line.heading_level:
-                        curr_parent_headings.pop()
-                    if curr_heading_line.heading_level < next_line.heading_level:
-                        curr_parent_headings.append(curr_heading_line.heading_title)
+                    curr_level = curr_heading_line.heading_level
+                    curr_parent_headings[curr_level - 1] = curr_heading_line.heading_title
+                    for level in range(curr_level, MAX_HEADING_LEVEL):
+                        curr_parent_headings[level] = None
 
             curr_heading_line = next_line
             curr_lines = []
 
         curr_lines.append(next_line.full_line)
-    yield Chapter(curr_parent_headings, curr_heading_line, curr_lines)
+    parents = __get_parents(curr_parent_headings, curr_heading_line)
+    yield Chapter(parents, curr_heading_line, curr_lines)
+
+
+def __get_parents(parent_headings, heading_line):
+    if heading_line is None:
+        return []
+    max_level = heading_line.heading_level
+    trunc = list(parent_headings)[: (max_level - 1)]
+    return [h for h in trunc if h is not None]
 
 
 class Line:
@@ -295,4 +305,13 @@ def main():
 
 
 if __name__ == "__main__":
+    # sys.argv = [
+    #     "/home/evod/projects/mdsplit/mdsplit.py",
+    #     "huge_err.md",
+    #     "-l",
+    #     "3",
+    #     "-o",
+    #     "/tmp/xxxx",
+    # ]
+    print(sys.argv)
     main()

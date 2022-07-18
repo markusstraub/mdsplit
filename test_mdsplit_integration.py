@@ -40,9 +40,9 @@ def test_default_h1_split(tmp_path, script_runner):
 
     # is there a way to access the Stats object?
     # that would be more elegant than comparing stdout
-    assert "- 7 input file(s)" in ret.stdout
-    assert "- 15 extracted chapter(s)" in ret.stdout
-    assert "- 13 new output file(s)" in ret.stdout
+    assert "- 8 input file(s)" in ret.stdout
+    assert "- 17 extracted chapter(s)" in ret.stdout
+    assert "- 15 new output file(s)" in ret.stdout
 
 
 def test_h3_split(tmp_path, script_runner):

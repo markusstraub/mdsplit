@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mdsplit"
-version = "0.3.1"
+version = "0.3.2a"
 description = "Split markdown files at headings"
 readme = "README.md"
 authors = ["Markus Straub"]

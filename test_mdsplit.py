@@ -59,7 +59,7 @@ def test_line():
     assert line.heading_title == "strip rightmost hashes"
 
 
-@pytest.mark.parametrize("max_level", [1, 3])
+@pytest.mark.parametrize("max_level", range(1, 7))
 def test_split_by_heading_simple(max_level):
     with open("test_resources/simple.md") as fh:
         chapters = list(split_by_heading(fh, max_level))
@@ -76,7 +76,19 @@ def test_split_by_heading_simple(max_level):
     assert len(chapters[1].text) == 3
 
 
-@pytest.mark.parametrize("max_level", [1, 3])
+def test_split_by_heading_jump():
+    with open("test_resources/jump_in_headings.md") as fh:
+        chapters = list(split_by_heading(fh, 6))
+
+    assert len(chapters) == 8
+    assert chapters[1].parent_headings == ["1"]
+    assert chapters[2].parent_headings == ["1"]
+    assert chapters[3].parent_headings == ["1"]
+    assert chapters[4].parent_headings == ["1", "1.4"]
+    assert chapters[5].parent_headings == ["1"]
+
+
+@pytest.mark.parametrize("max_level", range(1, 7))
 def test_split_by_heading_codeblock(max_level):
     with open("test_resources/codeblock.md") as fh:
         chapters = list(split_by_heading(fh, max_level))
