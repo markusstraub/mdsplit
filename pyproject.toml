@@ -23,6 +23,7 @@ ipykernel = "*"
 
 [tool.pytest.ini_options]
 addopts = ["-ra", "-W error"]
+testpaths = ["tests"]
 
 [tool.black]
 line-length = 100

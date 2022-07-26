@@ -27,16 +27,18 @@ def assert_same_file_contents(tmp_dir, expected_dir):
 
 
 def test_fail_on_existing_output_directory(tmp_path, script_runner):
-    ret = script_runner.run("mdsplit.py", "--output", str(tmp_path), "test_resources")
+    ret = script_runner.run("mdsplit.py", "--output", str(tmp_path), "tests/test_resources")
     assert not ret.success
 
 
 def test_default_h1_split(tmp_path, script_runner):
     # --force required because the tmp_path will already be created
-    ret = script_runner.run("mdsplit.py", "--output", str(tmp_path), "test_resources", "--force")
+    ret = script_runner.run(
+        "mdsplit.py", "--output", str(tmp_path), "tests/test_resources", "--force"
+    )
     assert ret.success
-    assert_same_file_list(tmp_path, "test_expected/by_h1")
-    assert_same_file_contents(tmp_path, "test_expected/by_h1")
+    assert_same_file_list(tmp_path, "tests/test_expected/by_h1")
+    assert_same_file_contents(tmp_path, "tests/test_expected/by_h1")
 
     # is there a way to access the Stats object?
     # that would be more elegant than comparing stdout
@@ -52,12 +54,12 @@ def test_h3_split(tmp_path, script_runner):
         str(tmp_path),
         "--max-level",
         "3",
-        "test_resources/nested.md",
+        "tests/test_resources/nested.md",
         "--force",
     )
     assert ret.success
-    assert_same_file_list(tmp_path, "test_expected/by_h3/nested")
-    assert_same_file_contents(tmp_path, "test_expected/by_h3/nested")
+    assert_same_file_list(tmp_path, "tests/test_expected/by_h3/nested")
+    assert_same_file_contents(tmp_path, "tests/test_expected/by_h3/nested")
 
 
 # TODO how could we test stdin handling?

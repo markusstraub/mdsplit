@@ -61,7 +61,7 @@ def test_line():
 
 @pytest.mark.parametrize("max_level", range(1, 7))
 def test_split_by_heading_simple(max_level):
-    with open("test_resources/simple.md") as fh:
+    with open("tests/test_resources/simple.md") as fh:
         chapters = list(split_by_heading(fh, max_level))
 
     assert len(chapters) == 2
@@ -77,7 +77,7 @@ def test_split_by_heading_simple(max_level):
 
 
 def test_split_by_heading_jump():
-    with open("test_resources/jump_in_headings.md") as fh:
+    with open("tests/test_resources/jump_in_headings.md") as fh:
         chapters = list(split_by_heading(fh, 6))
 
     assert len(chapters) == 8
@@ -90,7 +90,7 @@ def test_split_by_heading_jump():
 
 @pytest.mark.parametrize("max_level", range(1, 7))
 def test_split_by_heading_codeblock(max_level):
-    with open("test_resources/codeblock.md") as fh:
+    with open("tests/test_resources/codeblock.md") as fh:
         chapters = list(split_by_heading(fh, max_level))
 
     assert len(chapters) == 1
@@ -100,7 +100,7 @@ def test_split_by_heading_codeblock(max_level):
 
 
 def test_split_by_h1_nested():
-    with open("test_resources/nested.md") as fh:
+    with open("tests/test_resources/nested.md") as fh:
         chapters = list(split_by_heading(fh, 1))
 
     assert len(chapters) == 3
@@ -114,7 +114,7 @@ def test_split_by_h1_nested():
 
 
 def test_split_by_h3_nested():
-    with open("test_resources/nested.md") as fh:
+    with open("tests/test_resources/nested.md") as fh:
         chapters = list(split_by_heading(fh, 3))
 
     assert len(chapters) == 11
