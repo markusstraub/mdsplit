@@ -13,7 +13,7 @@ def random_line(length, variance):
     return "".join(random.choices(POOL, k=final_length)).strip()
 
 
-file = "non_vcs/huge.md"
+file = "../non_vcs/huge.md"
 target_mb = 1_000
 with open(file, "w") as fp:
     current_bytes = 0
