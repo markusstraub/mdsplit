@@ -11,11 +11,14 @@ These files are written to subdirectories representing the document's structure.
 **Note:**
 - *Code blocks* (`` ``` ``)are detected (and headers inside ignored)
 - The output is *guaranteed to be identical* with the input
-  (except for the separation into multiple files of course).
+  (except for the separation into multiple files of course)
     - This means: no touching of whitespace or changing `-` to `*` of your lists
-      like some viusual markdown editors tend to do.
-- Text before the first heading is written to a file with the same name as the markdown file.
+      like some viusual markdown editors tend to do
+- Text before the first heading is written to a file with the same name as the markdown file
 - Chapters with the same heading name are written to the same file.
+- Reading from `stdin` is supported
+- Can easily handle large files,
+  e.g. a 1 GB file is split into 30k files in 35 seconds on my 2015 Thinkpad (with an SSD)
 
 **Limitations:**
 - Only [ATX headings](https://spec.commonmark.org/0.30/#atx-headings) 

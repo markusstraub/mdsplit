@@ -305,13 +305,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # sys.argv = [
-    #     "/home/evod/projects/mdsplit/mdsplit.py",
-    #     "huge_err.md",
-    #     "-l",
-    #     "3",
-    #     "-o",
-    #     "/tmp/xxxx",
-    # ]
-    print(sys.argv)
     main()
