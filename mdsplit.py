@@ -32,9 +32,10 @@ Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
 class Splitter(ABC):
-    def __init__(self, level, force, verbose):
+    def __init__(self, level, force, verbose, toc):
         self.level = level
         self.force = force
+        self.toc = toc
         self.verbose = verbose
         self.stats = Stats()
 
@@ -47,6 +48,9 @@ class Splitter(ABC):
         pass
 
     def process_stream(self, in_stream, fallback_out_file_name, out_path):
+        toc = ""
+        toplevel_path = None
+
         if self.verbose:
             print(f"Create output folder '{out_path}'")
 
@@ -55,6 +59,9 @@ class Splitter(ABC):
         for chapter in chapters:
             self.stats.chapters += 1
             chapter_dir = out_path
+
+            is_toplevel = len(chapter.parent_headings) == 0
+
             for parent in chapter.parent_headings:
                 chapter_dir = chapter_dir / get_valid_filename(parent)
             chapter_dir.mkdir(parents=True, exist_ok=True)
@@ -66,13 +73,41 @@ class Splitter(ABC):
             )
 
             chapter_path = chapter_dir / chapter_filename
+
+            if not is_toplevel or toplevel_path is not None:
+                toc += f"\n{(len(chapter.parent_headings) - 1 )*'  '}* [{chapter.heading.heading_title}](<./{chapter_path}>)"
+            else:
+                toplevel_path = chapter_path
+
             if self.verbose:
                 print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
+
             if not chapter_path.exists():
                 self.stats.new_out_files += 1
             with open(chapter_path, mode="a") as file:
                 for line in chapter.text:
                     file.write(line)
+
+                if is_toplevel and self.toc:
+                    print(f"Write to {chapter_path}")
+                    file.write(toc)
+
+        if self.toc:
+            if not toplevel_path:
+                raise argparse.ArgumentError(
+                    argument=None,
+                    message="A toplevel chapter (#) is required to add a table of contents",
+                )
+
+            with open(toplevel_path, mode="a") as file:
+                if self.verbose:
+                    print(f"Write Table of contents to {chapter_path}")
+                file.write(toc)
+
+        if self.verbose:
+            print("")
+            print("Table of contents:")
+            print(toc)
 
 
 class StdinSplitter(Splitter):
@@ -99,9 +134,10 @@ class StdinSplitter(Splitter):
 class PathBasedSplitter(Splitter):
     """Split a specific file or all .md files found in a directory (recursively)"""
 
-    def __init__(self, in_path, level, out_path, force, verbose):
-        super().__init__(level, force, verbose)
+    def __init__(self, in_path, level, out_path, force, verbose, toc):
+        super().__init__(level, force, verbose, toc)
         self.in_path = Path(in_path)
+
         if not self.in_path.exists():
             raise MdSplitError(f"Input file/directory '{self.in_path}' does not exist. Exiting..")
         elif self.in_path.is_file():
@@ -249,8 +285,10 @@ def get_valid_filename(name):
     """
     s = str(name).strip()
     s = re.sub(r"(?u)[^-\w. ]", "", s)
+
     if s in {"", ".", ".."}:
         raise ValueError(f"Could not derive file name from '{name}'")
+
     return s
 
 
@@ -282,6 +320,9 @@ def main():
         action="store_true",
         help="write into output folder even if it already exists",
     )
+    parser.add_argument(
+        "-t", "--tableofcontents", action="store_true", help="Generate a table of contents"
+    )
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -290,6 +331,7 @@ def main():
             "level": args.max_level,
             "out_path": args.output,
             "force": args.force,
+            "toc": args.tableofcontents,
             "verbose": args.verbose,
         }
         splitter = (
