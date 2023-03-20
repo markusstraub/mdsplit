@@ -32,12 +32,13 @@ Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
 class Splitter(ABC):
-    def __init__(self, level, force, verbose, toc):
+    def __init__(self, level, force, verbose, toc, delimeter):
         self.level = level
         self.force = force
         self.toc = toc
         self.verbose = verbose
         self.stats = Stats()
+        self.delimeter = delimeter
 
     @abstractmethod
     def process(self):
@@ -63,13 +64,13 @@ class Splitter(ABC):
             is_toplevel = len(chapter.parent_headings) == 0
 
             for parent in chapter.parent_headings:
-                chapter_dir = chapter_dir / get_valid_filename(parent)
+                chapter_dir = chapter_dir / get_valid_filename(parent, self.delimeter)
             chapter_dir.mkdir(parents=True, exist_ok=True)
 
             chapter_filename = (
                 fallback_out_file_name
                 if chapter.heading is None
-                else get_valid_filename(chapter.heading.heading_title) + ".md"
+                else get_valid_filename(chapter.heading.heading_title, self.delimeter) + ".md"
             )
 
             chapter_path = chapter_dir / chapter_filename
@@ -113,8 +114,8 @@ class Splitter(ABC):
 class StdinSplitter(Splitter):
     """Split content from stdin"""
 
-    def __init__(self, level, out_path, force, verbose):
-        super().__init__(level, force, verbose)
+    def __init__(self, level, out_path, force, verbose, toc, delimeter):
+        super().__init__(level, force, verbose, toc, delimeter)
         self.out_path = Path(DIR_SUFFIX) if out_path is None else Path(out_path)
         if self.out_path.exists():
             if self.force:
@@ -134,8 +135,8 @@ class StdinSplitter(Splitter):
 class PathBasedSplitter(Splitter):
     """Split a specific file or all .md files found in a directory (recursively)"""
 
-    def __init__(self, in_path, level, out_path, force, verbose, toc):
-        super().__init__(level, force, verbose, toc)
+    def __init__(self, in_path, level, out_path, force, verbose, toc, delimeter):
+        super().__init__(level, force, verbose, toc, delimeter)
         self.in_path = Path(in_path)
 
         if not self.in_path.exists():
@@ -279,12 +280,15 @@ class Stats:
     chapters: int = 0
 
 
-def get_valid_filename(name):
+def get_valid_filename(name, delimeter):
     """
     Adapted from https://github.com/django/django/blob/main/django/utils/text.py
+
+    Replace spaces with delimeter
     """
     s = str(name).strip()
     s = re.sub(r"(?u)[^-\w. ]", "", s)
+    s = s.replace(" ", delimeter)
 
     if s in {"", ".", ".."}:
         raise ValueError(f"Could not derive file name from '{name}'")
@@ -302,6 +306,13 @@ def main():
         nargs="?",
         help="path to input file/folder (omit or set to '-' to read from stdin)",
         default="-",
+    )
+    parser.add_argument(
+        "-d",
+        "--delimeter",
+        type=str,
+        default=" ",
+        help="Delimeter bewteen words in filenames, default: ' '",
     )
     parser.add_argument(
         "-l",
@@ -333,6 +344,7 @@ def main():
             "force": args.force,
             "toc": args.tableofcontents,
             "verbose": args.verbose,
+            "delimeter": args.delimeter,
         }
         splitter = (
             StdinSplitter(**splitter_args)
