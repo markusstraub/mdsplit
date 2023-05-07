@@ -7,6 +7,7 @@
 Each chapter (or subchapter) is written to its own file,
 which is named after the heading title.
 These files are written to subdirectories representing the document's structure.
+Optionally a table of contents (`toc.md`) can be created for each input file.
 
 **Note:**
 - *Code blocks* (`` ``` ``)are detected (and headers inside ignored)
@@ -38,6 +39,12 @@ Or simply download [mdsplit.py](mdsplit.py) and run it (it does not use any depe
     python3 mdsplit.py
 
 ## Usage
+
+**Show documentation and supported arguments**:
+
+```bash
+mdsplit --help
+```
 
 **Split a file at level 1 headings**, e.g. `# This Heading`, and write results to an output folder based on the input name:
 

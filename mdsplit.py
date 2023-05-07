@@ -13,6 +13,7 @@ Note:
 - Text before the first heading is written to a file with the same name as the markdown file.
 - Chapters with the same heading name are written to the same file.
 - Only ATX headings (such as # Heading 1) are supported.
+- Optionally a table of contents (toc.md) can be created.
 """
 
 from abc import ABC, abstractmethod
@@ -71,19 +72,20 @@ class Splitter(ABC):
             if self.verbose:
                 print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
             if not chapter_path.exists():
+                # the first time a chapter file is written
+                # (can happen multiple times for duplicate headings)
                 self.stats.new_out_files += 1
+                if self.toc:
+                    indent = len(chapter.parent_headings) * "  "
+                    title = (
+                        Splitter.remove_md_suffix(fallback_out_file_name)
+                        if chapter.heading is None
+                        else chapter.heading.heading_title
+                    )
+                    toc += f"\n{indent}- [{title}](<./{chapter_path.relative_to(out_path)}>)"
             with open(chapter_path, mode="a") as file:
                 for line in chapter.text:
                     file.write(line)
-
-            if self.toc:
-                indent = len(chapter.parent_headings) * "  "
-                title = (
-                    Splitter.remove_md_suffix(fallback_out_file_name)
-                    if chapter.heading is None
-                    else chapter.heading.heading_title
-                )
-                toc += f"\n{indent}- [{title}](<./{chapter_path.relative_to(out_path)}>)"
 
         if self.toc:
             self.stats.new_out_files += 1
@@ -301,7 +303,7 @@ def main():
         "-t",
         "--table-of-contents",
         action="store_true",
-        help="Generate a table of contents (an additional 'toc.md' file per input file)",
+        help="Generate a table of contents (one 'toc.md' per input file)",
     )
     parser.add_argument(
         "-o", "--output", default=None, help="path to output folder (must not exist)"
