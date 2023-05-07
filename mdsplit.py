@@ -32,8 +32,9 @@ Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
 class Splitter(ABC):
-    def __init__(self, level, force, verbose):
+    def __init__(self, level, toc, force, verbose):
         self.level = level
+        self.toc = toc
         self.force = force
         self.verbose = verbose
         self.stats = Stats()
@@ -50,6 +51,7 @@ class Splitter(ABC):
         if self.verbose:
             print(f"Create output folder '{out_path}'")
 
+        toc = "# Table of Contents\n"
         self.stats.in_files += 1
         chapters = split_by_heading(in_stream, self.level)
         for chapter in chapters:
@@ -74,12 +76,34 @@ class Splitter(ABC):
                 for line in chapter.text:
                     file.write(line)
 
+            if self.toc:
+                indent = len(chapter.parent_headings) * "  "
+                title = (
+                    Splitter.remove_md_suffix(fallback_out_file_name)
+                    if chapter.heading is None
+                    else chapter.heading.heading_title
+                )
+                toc += f"\n{indent}- [{title}](<./{chapter_path.relative_to(out_path)}>)"
+
+        if self.toc:
+            self.stats.new_out_files += 1
+            with open(out_path / "toc.md", mode="w") as file:
+                if self.verbose:
+                    print(f"Write table of contents to {out_path / 'toc.md'}")
+                file.write(toc)
+
+    @staticmethod
+    def remove_md_suffix(filename):
+        if filename.endswith(".md"):
+            return filename[:-3]
+        return filename
+
 
 class StdinSplitter(Splitter):
     """Split content from stdin"""
 
-    def __init__(self, level, out_path, force, verbose):
-        super().__init__(level, force, verbose)
+    def __init__(self, level, toc, out_path, force, verbose):
+        super().__init__(level, toc, force, verbose)
         self.out_path = Path(DIR_SUFFIX) if out_path is None else Path(out_path)
         if self.out_path.exists():
             if self.force:
@@ -99,8 +123,8 @@ class StdinSplitter(Splitter):
 class PathBasedSplitter(Splitter):
     """Split a specific file or all .md files found in a directory (recursively)"""
 
-    def __init__(self, in_path, level, out_path, force, verbose):
-        super().__init__(level, force, verbose)
+    def __init__(self, in_path, level, toc, out_path, force, verbose):
+        super().__init__(level, toc, force, verbose)
         self.in_path = Path(in_path)
         if not self.in_path.exists():
             raise MdSplitError(f"Input file/directory '{self.in_path}' does not exist. Exiting..")
@@ -274,6 +298,12 @@ def main():
         default=1,
     )
     parser.add_argument(
+        "-t",
+        "--table-of-contents",
+        action="store_true",
+        help="Generate a table of contents (an additional 'toc.md' file per input file)",
+    )
+    parser.add_argument(
         "-o", "--output", default=None, help="path to output folder (must not exist)"
     )
     parser.add_argument(
@@ -288,6 +318,7 @@ def main():
     try:
         splitter_args = {
             "level": args.max_level,
+            "toc": args.table_of_contents,
             "out_path": args.output,
             "force": args.force,
             "verbose": args.verbose,
