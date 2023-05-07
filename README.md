@@ -108,10 +108,11 @@ cat in.md | mdsplit --output out
 Add the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa)
 and install additional python versions for testing
 
-    sudo add-apt-repository ppa:deadsnakes/ppa
-    sudo apt install python3.7 python3.7-distutils
-    sudo apt install python3.8 python3.8-distutils
-    sudo apt install python3.9 python3.9-distutils
+```bash
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt install python3.7 python3.7-distutils
+...
+```
 
 Install [poetry](https://python-poetry.org)
 
@@ -125,7 +126,7 @@ Run tests (for the default python version)
 
 Run tests for all supported python versions
 
-    tox
+    poetry run tox
 
 Release new version
 
