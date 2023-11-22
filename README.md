@@ -27,6 +27,9 @@ Optionally a table of contents (`toc.md`) can be created for each input file.
   [Setext headings](https://spec.commonmark.org/0.30/#setext-headings)
   (underlined headings) are not recognised.
 
+**Similar projects:**
+You may also be interested in https://github.com/alandefreitas/mdsplit (C++-based).
+
 ## Installation
 
 Either use pip:
@@ -44,6 +47,26 @@ Or simply download [mdsplit.py](mdsplit.py) and run it (it does not use any depe
 
 ```bash
 mdsplit --help
+```
+
+```
+usage: mdsplit.py [-h] [-e ENCODING] [-l {1,2,3,4,5,6}] [-t] [-o OUTPUT] [-f] [-v] [input]
+
+positional arguments:
+  input                 path to input file/folder (omit or set to '-' to read from stdin)
+
+options:
+  -h, --help            show this help message and exit
+  -e ENCODING, --encoding ENCODING
+                        force a specific encoding, default: python's default platform encoding
+  -l {1,2,3,4,5,6}, --max-level {1,2,3,4,5,6}
+                        maximum heading level to split, default: 1
+  -t, --table-of-contents
+                        Generate a table of contents (one 'toc.md' per input file)
+  -o OUTPUT, --output OUTPUT
+                        path to output folder (must not exist)
+  -f, --force           write into output folder even if it already exists
+  -v, --verbose
 ```
 
 **Split a file at level 1 headings**, e.g. `# This Heading`, and write results to an output folder based on the input name:
