@@ -15,14 +15,14 @@ def assert_same_file_list(actual_dir, expected_dir):
     assert list_files(actual_dir) == list_files(expected_dir)
 
 
-def assert_same_file_contents(tmp_dir, expected_dir):
+def assert_same_file_contents(tmp_dir, expected_dir, encoding=None):
     for dir_path, dirs, files in os.walk(expected_dir):
         for file_name in files:
             expected_file = Path(dir_path, file_name)
-            expected = expected_file.read_text()
+            expected = expected_file.read_text(encoding=encoding)
 
             actual_file = tmp_dir / expected_file.relative_to(expected_dir)
-            actual = actual_file.read_text()
+            actual = actual_file.read_text(encoding=encoding)
             assert actual == expected, f"errror while comparing {expected_file}"
 
 
@@ -35,9 +35,9 @@ def test_default_h1_split(tmp_path, script_runner):
     # --force required because the tmp_path will already be created
     ret = script_runner.run(
         "mdsplit.py",
+        "tests/test_resources",
         "--output",
         str(tmp_path),
-        "tests/test_resources",
         "--table-of-contents",
         "--force",
     )
@@ -55,17 +55,33 @@ def test_default_h1_split(tmp_path, script_runner):
 def test_h3_split(tmp_path, script_runner):
     ret = script_runner.run(
         "mdsplit.py",
+        "tests/test_resources/nested.md",
         "--output",
         str(tmp_path),
         "--max-level",
         "3",
         "--table-of-contents",
-        "tests/test_resources/nested.md",
         "--force",
     )
     assert ret.success
     assert_same_file_list(tmp_path, "tests/test_expected/by_h3/nested")
     assert_same_file_contents(tmp_path, "tests/test_expected/by_h3/nested")
+
+
+def test_encoding(tmp_path, script_runner):
+    ret = script_runner.run(
+        "mdsplit.py",
+        "tests/test_resources_encoding/cp1252.md",
+        "--encoding",
+        "cp1252",
+        "--output",
+        str(tmp_path),
+        "--force",
+    )
+    assert ret.success
+    assert_same_file_list(tmp_path, "tests/test_expected/encoding")
+    assert_same_file_contents(tmp_path, "tests/test_expected/encoding", encoding="cp1252")
+    pass
 
 
 # TODO how could we test stdin handling?

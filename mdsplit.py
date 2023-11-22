@@ -33,7 +33,8 @@ Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
 class Splitter(ABC):
-    def __init__(self, level, toc, force, verbose):
+    def __init__(self, encoding, level, toc, force, verbose):
+        self.encoding = encoding
         self.level = level
         self.toc = toc
         self.force = force
@@ -83,13 +84,13 @@ class Splitter(ABC):
                         else chapter.heading.heading_title
                     )
                     toc += f"\n{indent}- [{title}](<./{chapter_path.relative_to(out_path)}>)"
-            with open(chapter_path, mode="a") as file:
+            with open(chapter_path, mode="a", encoding=self.encoding) as file:
                 for line in chapter.text:
                     file.write(line)
 
         if self.toc:
             self.stats.new_out_files += 1
-            with open(out_path / "toc.md", mode="w") as file:
+            with open(out_path / "toc.md", mode="w", encoding=self.encoding) as file:
                 if self.verbose:
                     print(f"Write table of contents to {out_path / 'toc.md'}")
                 file.write(toc)
@@ -104,8 +105,8 @@ class Splitter(ABC):
 class StdinSplitter(Splitter):
     """Split content from stdin"""
 
-    def __init__(self, level, toc, out_path, force, verbose):
-        super().__init__(level, toc, force, verbose)
+    def __init__(self, encoding, level, toc, out_path, force, verbose):
+        super().__init__(encoding, level, toc, force, verbose)
         self.out_path = Path(DIR_SUFFIX) if out_path is None else Path(out_path)
         if self.out_path.exists():
             if self.force:
@@ -125,8 +126,8 @@ class StdinSplitter(Splitter):
 class PathBasedSplitter(Splitter):
     """Split a specific file or all .md files found in a directory (recursively)"""
 
-    def __init__(self, in_path, level, toc, out_path, force, verbose):
-        super().__init__(level, toc, force, verbose)
+    def __init__(self, in_path, encoding, level, toc, out_path, force, verbose):
+        super().__init__(encoding, level, toc, force, verbose)
         self.in_path = Path(in_path)
         if not self.in_path.exists():
             raise MdSplitError(f"Input file/directory '{self.in_path}' does not exist. Exiting..")
@@ -162,7 +163,7 @@ class PathBasedSplitter(Splitter):
     def process_file(self, in_file_path, out_path):
         if self.verbose:
             print(f"Process file '{in_file_path}' to '{out_path}'")
-        with open(in_file_path) as stream:
+        with open(in_file_path, encoding=self.encoding) as stream:
             self.process_stream(stream, in_file_path.name, out_path)
 
     def print_stats(self):
@@ -292,6 +293,13 @@ def main():
         default="-",
     )
     parser.add_argument(
+        "-e",
+        "--encoding",
+        type=str,
+        help="force a specific encoding, default: python's default platform encoding",
+        default=None,
+    )
+    parser.add_argument(
         "-l",
         "--max-level",
         type=int,
@@ -303,7 +311,7 @@ def main():
         "-t",
         "--table-of-contents",
         action="store_true",
-        help="Generate a table of contents (one 'toc.md' per input file)",
+        help="generate a table of contents (one 'toc.md' per input file)",
     )
     parser.add_argument(
         "-o", "--output", default=None, help="path to output folder (must not exist)"
@@ -319,6 +327,7 @@ def main():
 
     try:
         splitter_args = {
+            "encoding": args.encoding,
             "level": args.max_level,
             "toc": args.table_of_contents,
             "out_path": args.output,
