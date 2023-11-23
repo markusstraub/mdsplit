@@ -28,6 +28,7 @@ Optionally a table of contents (`toc.md`) can be created for each input file.
   (underlined headings) are not recognised.
 
 **Similar projects:**
+
 You may also be interested in https://github.com/alandefreitas/mdsplit (C++-based).
 
 ## Installation
