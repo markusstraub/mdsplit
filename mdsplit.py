@@ -274,8 +274,8 @@ def get_valid_filename(name):
     """
     Adapted from https://github.com/django/django/blob/main/django/utils/text.py
     """
-    s = str(name).strip()
-    s = re.sub(r"(?u)[^-\w. ]", "", s)
+    s = str(name).strip().replace(" ", "-")
+    s = re.sub(r"(?u)[^-\w.]", "", s)
     if s in {"", ".", ".."}:
         raise ValueError(f"Could not derive file name from '{name}'")
     return s
