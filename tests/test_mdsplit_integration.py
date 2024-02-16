@@ -23,6 +23,9 @@ def assert_same_file_contents(tmp_dir, expected_dir, encoding=None):
 
             actual_file = tmp_dir / expected_file.relative_to(expected_dir)
             actual = actual_file.read_text(encoding=encoding)
+            print("----")
+            print(actual)
+            print("----")
             assert actual == expected, f"errror while comparing {expected_file}"
 
 

@@ -6,7 +6,7 @@ from mdsplit import split_by_heading
 
 def test_get_valid_filename():
     assert get_valid_filename("test.txt") == "test.txt"
-    assert get_valid_filename("test with spaces-and-dashes") == "test with spaces-and-dashes"
+    assert get_valid_filename("test with spaces-and-dashes") == "test-with-spaces-and-dashes"
     assert get_valid_filename("test/\\~#*+.txt") == "test.txt"
     assert get_valid_filename("non_ascii_Äß鳥_ჩიტები") == "non_ascii_Äß鳥_ჩიტები"
 
