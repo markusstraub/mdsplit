@@ -58,7 +58,7 @@ class Splitter(ABC):
         chapters = split_by_heading(in_stream, self.level)
         
         chapter_files = []
-        chapter_title = []
+        chapter_titles = []
         
         for chapter in chapters:
             self.stats.chapters += 1
@@ -90,26 +90,25 @@ class Splitter(ABC):
                         if chapter.heading is None
                         else chapter.heading.heading_title
                     )
-                    chapter_title.append(title)
+                    chapter_titles.append(title)
                     toc += f"\n{indent}- [{title}](<./{chapter_path.relative_to(out_path)}>)"
             with open(chapter_path, mode="a", encoding=self.encoding) as file:
                 for line in chapter.text:
                     file.write(line)
 
-        for i, chapter_path in enumerate(chapter_files):
-            with open(out_path / chapter_path, mode="a", encoding=self.encoding) as file:
-                file.write("\n\n---\n\n")
-
-                file.write(f"[Index](./toc.md) | ")
-
-                if i > 0:
-                    file.write(f"Previous: [{chapter_title[i - 1]}](./{chapter_files[i - 1]})  | ")
-
-                if i < len(chapter_files) - 1:
-                    file.write(f"Next: [{chapter_title[i + 1]}](./{chapter_files[i + 1]})")
-
-
         if self.toc:
+            for i, chapter_path in enumerate(chapter_files):
+                with open(out_path / chapter_path, mode="a", encoding=self.encoding) as file:
+                    file.write("\n\n---\n\n")
+
+                    file.write(f"[Index](./toc.md) | ")
+
+                    if i > 0:
+                        file.write(f"Previous: [{chapter_titles[i - 1]}](./{chapter_files[i - 1]})  | ")
+
+                    if i < len(chapter_files) - 1:
+                        file.write(f"Next: [{chapter_titles[i + 1]}](./{chapter_files[i + 1]})")
+
             self.stats.new_out_files += 1
             with open(out_path / "toc.md", mode="w", encoding=self.encoding) as file:
                 if self.verbose:
