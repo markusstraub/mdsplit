@@ -57,8 +57,7 @@ class Splitter(ABC):
         toc = "# Table of Contents\n"
         self.stats.in_files += 1
         chapters = split_by_heading(in_stream, self.level)
-        chapter_files = []
-        chapter_titles = []
+        nav_chapter_path2title = {}
 
         for chapter in chapters:
             self.stats.chapters += 1
@@ -72,9 +71,7 @@ class Splitter(ABC):
                 if chapter.heading is None
                 else get_valid_filename(chapter.heading.heading_title) + ".md"
             )
-
             chapter_path = chapter_dir / chapter_filename
-            chapter_files.append(chapter_path.relative_to(out_path))
 
             if self.verbose:
                 print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
@@ -82,28 +79,36 @@ class Splitter(ABC):
                 # the first time a chapter file is written
                 # (can happen multiple times for duplicate headings)
                 self.stats.new_out_files += 1
+                title = (
+                    Splitter.remove_md_suffix(fallback_out_file_name)
+                    if chapter.heading is None
+                    else chapter.heading.heading_title
+                )
+                if self.navigation:
+                    nav_chapter_path2title[chapter_path.relative_to(out_path)] = title
                 if self.toc:
                     indent = len(chapter.parent_headings) * "  "
-                    title = (
-                        Splitter.remove_md_suffix(fallback_out_file_name)
-                        if chapter.heading is None
-                        else chapter.heading.heading_title
-                    )
-                    chapter_titles.append(title)
                     toc += f"\n{indent}- [{title}](<./{chapter_path.relative_to(out_path)}>)"
             with open(chapter_path, mode="a", encoding=self.encoding) as file:
                 for line in chapter.text:
                     file.write(line)
 
         if self.navigation:
-            for i, chapter_path in enumerate(chapter_files):
+            nav_chapter_paths = list(nav_chapter_path2title)
+            for i, chapter_path in enumerate(nav_chapter_paths):
                 with open(out_path / chapter_path, mode="a", encoding=self.encoding) as file:
                     file.write("\n\n---\n\n")
-                    file.write(f"[🡅](./toc.md) ·•⦁•·")
+                    file.write(f"[🡅](./toc.md)")
                     if i > 0:
-                        file.write(f" [🡄 {chapter_titles[i - 1]}](./{chapter_files[i - 1]}) ·•⦁•·")
-                    if i < len(chapter_files) - 1:
-                        file.write(f" [{chapter_titles[i + 1]} 🡆](./{chapter_files[i + 1]})")
+                        prev_chapter_path = nav_chapter_paths[i - 1]
+                        file.write(
+                            f" ·•⦁•· [🡄 {nav_chapter_path2title[prev_chapter_path]}](./{prev_chapter_path})"
+                        )
+                    if i < len(nav_chapter_path2title) - 1:
+                        next_chapter_path = nav_chapter_paths[i + 1]
+                        file.write(
+                            f" ·•⦁•· [{nav_chapter_path2title[next_chapter_path]} 🡆](./{next_chapter_path})"
+                        )
 
         if self.toc:
             self.stats.new_out_files += 1

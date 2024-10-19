@@ -57,6 +57,29 @@ def test_default_h1_split(tmp_path, script_runner):
     assert "- 23 new output file(s)" in ret.stdout
 
 
+def test_default_h1_split_with_navigation(tmp_path, script_runner):
+    ret = script_runner.run(
+        [
+            "mdsplit.py",
+            "tests/test_resources",
+            "--output",
+            str(tmp_path),
+            "--table-of-contents",
+            "--navigation",
+            "--force",
+        ]
+    )
+    assert ret.success
+    assert_same_file_list(tmp_path, "tests/test_expected/by_h1_with_navigation")
+    assert_same_file_contents(tmp_path, "tests/test_expected/by_h1_with_navigation")
+
+    # is there a way to access the Stats object?
+    # that would be more elegant than comparing stdout
+    assert "- 8 input file(s)" in ret.stdout
+    assert "- 17 extracted chapter(s)" in ret.stdout
+    assert "- 23 new output file(s)" in ret.stdout
+
+
 def test_h3_split(tmp_path, script_runner):
     ret = script_runner.run(
         [
