@@ -1,19 +1,30 @@
-"""Split markdown files into chapters at a given heading level.
+"""Split Markdown files into chapters at a given heading level.
 
 Each chapter (or subchapter) is written to its own file,
 which is named after the heading title.
 These files are written to subdirectories representing the document's structure.
 
+Optionally you can create:
+- table of contents (toc.md) for each input file
+- navigation footers (links to table of contents, previous page, next page)
+
 Note:
-- *Code blocks* (```)are detected (and headers inside ignored)
-- The output is *guaranteed to be identical* with the input
-    (except for the separation into multiple files of course).
-    - This means: no touching of whitespace or changing `-` to `*` of your lists
-        like some viusual markdown editors tend to do.
-- Text before the first heading is written to a file with the same name as the markdown file.
+- Code blocks (```) are detected (and headers inside ignored)
+- The output is guaranteed to be identical with the input
+  (except for the separation into multiple files of course)
+    - This means: no touching of whitespace or changing - to * of your lists
+      like some viusual Markdown editors tend to do
+- Text before the first heading is written to a file with the same name as the Markdown file
 - Chapters with the same heading name are written to the same file.
-- Only ATX headings (such as # Heading 1) are supported.
-- Optionally a table of contents (toc.md) can be created.
+- Reading from stdin is supported
+- Can easily handle large files,
+  e.g. a 1 GB file is split into 30k files in 35 seconds on a 2015 Thinkpad (with an SSD)
+
+Limitations:
+- Only [ATX headings](https://spec.commonmark.org/0.31.2/#atx-headings)
+  such as '# Heading 1' are supported.
+  [Setext headings](https://spec.commonmark.org/0.31.2/#setext-headings)
+  (underlined headings) are not recognised.
 """
 
 from abc import ABC, abstractmethod
@@ -339,7 +350,7 @@ def main():
         "-n",
         "--navigation",
         action="store_true",
-        help="add navigation links to the bottom of each page (toc, previous page, next page)",
+        help="add a navigation footer on each page (links to toc, previous page, next page)",
     )
     parser.add_argument(
         "-o", "--output", default=None, help="path to output folder (must not exist)"
