@@ -33,10 +33,11 @@ Chapter = namedtuple("Chapter", "parent_headings, heading, text")
 
 
 class Splitter(ABC):
-    def __init__(self, encoding, level, toc, force, verbose):
+    def __init__(self, encoding, level, toc, navigation, force, verbose):
         self.encoding = encoding
         self.level = level
         self.toc = toc
+        self.navigation = navigation
         self.force = force
         self.verbose = verbose
         self.stats = Stats()
@@ -56,10 +57,9 @@ class Splitter(ABC):
         toc = "# Table of Contents\n"
         self.stats.in_files += 1
         chapters = split_by_heading(in_stream, self.level)
-        
         chapter_files = []
         chapter_titles = []
-        
+
         for chapter in chapters:
             self.stats.chapters += 1
             chapter_dir = out_path
@@ -74,9 +74,8 @@ class Splitter(ABC):
             )
 
             chapter_path = chapter_dir / chapter_filename
-            
             chapter_files.append(chapter_path.relative_to(out_path))
-            
+
             if self.verbose:
                 print(f"Write {len(chapter.text)} lines to '{chapter_path}'")
             if not chapter_path.exists():
@@ -96,19 +95,17 @@ class Splitter(ABC):
                 for line in chapter.text:
                     file.write(line)
 
-        if self.toc:
+        if self.navigation:
             for i, chapter_path in enumerate(chapter_files):
                 with open(out_path / chapter_path, mode="a", encoding=self.encoding) as file:
                     file.write("\n\n---\n\n")
-
-                    file.write(f"[Index](./toc.md) | ")
-
+                    file.write(f"[🡅](./toc.md) ·•⦁•·")
                     if i > 0:
-                        file.write(f"Previous: [{chapter_titles[i - 1]}](./{chapter_files[i - 1]})  | ")
-
+                        file.write(f" [🡄 {chapter_titles[i - 1]}](./{chapter_files[i - 1]}) ·•⦁•·")
                     if i < len(chapter_files) - 1:
-                        file.write(f"Next: [{chapter_titles[i + 1]}](./{chapter_files[i + 1]})")
+                        file.write(f" [{chapter_titles[i + 1]} 🡆](./{chapter_files[i + 1]})")
 
+        if self.toc:
             self.stats.new_out_files += 1
             with open(out_path / "toc.md", mode="w", encoding=self.encoding) as file:
                 if self.verbose:
@@ -125,8 +122,8 @@ class Splitter(ABC):
 class StdinSplitter(Splitter):
     """Split content from stdin"""
 
-    def __init__(self, encoding, level, toc, out_path, force, verbose):
-        super().__init__(encoding, level, toc, force, verbose)
+    def __init__(self, encoding, level, toc, navigation, out_path, force, verbose):
+        super().__init__(encoding, level, toc, navigation, force, verbose)
         self.out_path = Path(DIR_SUFFIX) if out_path is None else Path(out_path)
         if self.out_path.exists():
             if self.force:
@@ -146,8 +143,8 @@ class StdinSplitter(Splitter):
 class PathBasedSplitter(Splitter):
     """Split a specific file or all .md files found in a directory (recursively)"""
 
-    def __init__(self, in_path, encoding, level, toc, out_path, force, verbose):
-        super().__init__(encoding, level, toc, force, verbose)
+    def __init__(self, in_path, encoding, level, toc, navigation, out_path, force, verbose):
+        super().__init__(encoding, level, toc, navigation, force, verbose)
         self.in_path = Path(in_path)
         if not self.in_path.exists():
             raise MdSplitError(f"Input file/directory '{self.in_path}' does not exist. Exiting..")
@@ -334,6 +331,12 @@ def main():
         help="generate a table of contents (one 'toc.md' per input file)",
     )
     parser.add_argument(
+        "-n",
+        "--navigation",
+        action="store_true",
+        help="add navigation links to the bottom of each page (toc, previous page, next page)",
+    )
+    parser.add_argument(
         "-o", "--output", default=None, help="path to output folder (must not exist)"
     )
     parser.add_argument(
@@ -350,6 +353,7 @@ def main():
             "encoding": args.encoding,
             "level": args.max_level,
             "toc": args.table_of_contents,
+            "navigation": args.navigation,
             "out_path": args.output,
             "force": args.force,
             "verbose": args.verbose,

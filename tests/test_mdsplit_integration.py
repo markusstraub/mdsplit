@@ -75,6 +75,25 @@ def test_h3_split(tmp_path, script_runner):
     assert_same_file_contents(tmp_path, "tests/test_expected/by_h3/nested")
 
 
+def test_h3_split_with_navigation(tmp_path, script_runner):
+    ret = script_runner.run(
+        [
+            "mdsplit.py",
+            "tests/test_resources/nested.md",
+            "--output",
+            str(tmp_path),
+            "--max-level",
+            "3",
+            "--table-of-contents",
+            "--navigation",
+            "--force",
+        ]
+    )
+    assert ret.success
+    assert_same_file_list(tmp_path, "tests/test_expected/by_h3/nested_with_navigation")
+    assert_same_file_contents(tmp_path, "tests/test_expected/by_h3/nested_with_navigation")
+
+
 def test_encoding(tmp_path, script_runner):
     ret = script_runner.run(
         [
