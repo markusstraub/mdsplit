@@ -30,19 +30,21 @@ def assert_same_file_contents(tmp_dir, expected_dir, encoding=None):
 
 
 def test_fail_on_existing_output_directory(tmp_path, script_runner):
-    ret = script_runner.run("mdsplit.py", "--output", str(tmp_path), "tests/test_resources")
+    ret = script_runner.run(["mdsplit.py", "--output", str(tmp_path), "tests/test_resources"])
     assert not ret.success
 
 
 def test_default_h1_split(tmp_path, script_runner):
     # --force required because the tmp_path will already be created
     ret = script_runner.run(
-        "mdsplit.py",
-        "tests/test_resources",
-        "--output",
-        str(tmp_path),
-        "--table-of-contents",
-        "--force",
+        [
+            "mdsplit.py",
+            "tests/test_resources",
+            "--output",
+            str(tmp_path),
+            "--table-of-contents",
+            "--force",
+        ]
     )
     assert ret.success
     assert_same_file_list(tmp_path, "tests/test_expected/by_h1")
@@ -57,14 +59,16 @@ def test_default_h1_split(tmp_path, script_runner):
 
 def test_h3_split(tmp_path, script_runner):
     ret = script_runner.run(
-        "mdsplit.py",
-        "tests/test_resources/nested.md",
-        "--output",
-        str(tmp_path),
-        "--max-level",
-        "3",
-        "--table-of-contents",
-        "--force",
+        [
+            "mdsplit.py",
+            "tests/test_resources/nested.md",
+            "--output",
+            str(tmp_path),
+            "--max-level",
+            "3",
+            "--table-of-contents",
+            "--force",
+        ]
     )
     assert ret.success
     assert_same_file_list(tmp_path, "tests/test_expected/by_h3/nested")
@@ -73,13 +77,15 @@ def test_h3_split(tmp_path, script_runner):
 
 def test_encoding(tmp_path, script_runner):
     ret = script_runner.run(
-        "mdsplit.py",
-        "tests/test_resources_encoding/cp1252.md",
-        "--encoding",
-        "cp1252",
-        "--output",
-        str(tmp_path),
-        "--force",
+        [
+            "mdsplit.py",
+            "tests/test_resources_encoding/cp1252.md",
+            "--encoding",
+            "cp1252",
+            "--output",
+            str(tmp_path),
+            "--force",
+        ]
     )
     assert ret.success
     assert_same_file_list(tmp_path, "tests/test_expected/encoding")

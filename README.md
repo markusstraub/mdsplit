@@ -22,7 +22,7 @@ Optionally a table of contents (`toc.md`) can be created for each input file.
   e.g. a 1 GB file is split into 30k files in 35 seconds on my 2015 Thinkpad (with an SSD)
 
 **Limitations:**
-- Only [ATX headings](https://spec.commonmark.org/0.30/#atx-headings) 
+- Only [ATX headings](https://spec.commonmark.org/0.30/#atx-headings)
   such as `# Heading 1` are supported.
   [Setext headings](https://spec.commonmark.org/0.30/#setext-headings)
   (underlined headings) are not recognised.
@@ -134,14 +134,14 @@ flowchart LR
 cat in.md | mdsplit --output out
 ```
 
-## Development (Ubuntu 22.04)
+## Development (Ubuntu 24.04)
 
 Add the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa)
 and install additional python versions for testing
 
 ```bash
 sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.7 python3.7-distutils
+sudo apt install python3.9-distutils python3.9-venv
 ...
 ```
 
