@@ -108,18 +108,17 @@ class Splitter(ABC):
             nav_chapter_paths = list(nav_chapter_path2title)
             for i, chapter_path in enumerate(nav_chapter_paths):
                 with open(out_path / chapter_path, mode="a", encoding=self.encoding) as file:
-                    file.write("\n\n---\n\n")
-                    file.write(f"[🡅](./toc.md)")
+                    nav = []
+                    if self.toc:
+                        nav.append(f"[🡅](./toc.md)")
                     if i > 0:
-                        prev_chapter_path = nav_chapter_paths[i - 1]
-                        file.write(
-                            f" ·•⦁•· [🡄 {nav_chapter_path2title[prev_chapter_path]}](./{prev_chapter_path})"
-                        )
+                        prev_path = nav_chapter_paths[i - 1]
+                        nav.append(f"[🡄 {nav_chapter_path2title[prev_path]}](./{prev_path})")
                     if i < len(nav_chapter_path2title) - 1:
-                        next_chapter_path = nav_chapter_paths[i + 1]
-                        file.write(
-                            f" ·•⦁•· [{nav_chapter_path2title[next_chapter_path]} 🡆](./{next_chapter_path})"
-                        )
+                        next_path = nav_chapter_paths[i + 1]
+                        nav.append(f"[{nav_chapter_path2title[next_path]} 🡆](./{next_path})")
+                    file.write("\n\n---\n\n")
+                    file.write(" ·•⦁•· ".join(nav))
 
         if self.toc:
             self.stats.new_out_files += 1
